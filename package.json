@@ -1,0 +1,16 @@
+{
+  "name": "tts_node",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@andresaya/edge-tts": "^1.8.0",
+    "miniaudio_node": "^0.1.0"
+  }
+}
