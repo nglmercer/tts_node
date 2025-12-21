@@ -34,7 +34,7 @@ export class TTSService {
     voice: string = 'en-US-AriaNeural',
     filename: string, // Base filename without extension
     options?: SynthesisOptions
-  ): Promise<string> {
+  ): Promise<{savedPath: string, fileBuffer: Buffer}> {
     
     // Default options if not provided
     const synthesisOptions: SynthesisOptions = options || {
@@ -49,8 +49,9 @@ export class TTSService {
     // We strip extension if provided because the library appends it
     const baseName = path.parse(filename).name;
     const outputPath = path.join(this.outputDir, baseName);
-    
+    const fileData = await this.tts.toBase64();
+    const fileBuffer = Buffer.from(fileData, 'base64');
     const savedPath = await this.tts.toFile(outputPath);
-    return savedPath;
+    return {savedPath, fileBuffer};
   }
 }

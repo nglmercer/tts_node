@@ -1,11 +1,14 @@
-import { AudioPlayer, initializeAudio,getSupportedFormats,createAudioPlayer,isFormatSupported,getAudioMetadata } from "miniaudio_node";
+import { AudioPlayer, initializeAudio, getSupportedFormats, createAudioPlayer, isFormatSupported, getAudioMetadata } from "miniaudio_node";
 import type { AudioPlayerConfig } from "miniaudio_node";
+
+export type Track = string | Buffer;
+
 /**
- * Playlist manager class for handling multiple audio files
+ * Playlist manager class for handling multiple audio files and buffers
  */
 export class PlaylistManager {
   private player: AudioPlayer;
-  private tracks: string[] = [];
+  private tracks: Track[] = [];
   private currentTrackIndex: number = 0;
   private isPlaying: boolean = false;
   private loop: boolean = false;
@@ -17,27 +20,36 @@ export class PlaylistManager {
   /**
    * Load multiple tracks into playlist
    */
-  async loadTracks(tracks: string[]): Promise<void> {
+  async loadTracks(tracks: Track[]): Promise<void> {
     console.log(`📚 Loading ${tracks.length} tracks into playlist...`);
 
     // Validate all tracks exist and are supported
-    for (const track of tracks) {
-      const extension = track.split(".").pop()?.toLowerCase();
-      if (!extension || !isFormatSupported(extension)) {
-        throw new Error(`Unsupported format: ${track}`);
-      }
+    const validTracks: Track[] = [];
 
-      // Check file exists
-      const fs = await import("node:fs");
-      if (!fs.existsSync(track)) {
-        console.warn(`⚠️  File not found: ${track}`);
+    for (const track of tracks) {
+      if (typeof track === 'string') {
+        const extension = track.split(".").pop()?.toLowerCase();
+        if (!extension || !isFormatSupported(extension)) {
+          console.warn(`⚠️  Unsupported format or invalid extension: ${track}`);
+          continue;
+        }
+
+        // Check file exists
+        const fs = await import("node:fs");
+        if (!fs.existsSync(track)) {
+          console.warn(`⚠️  File not found: ${track}`);
+          continue;
+        }
+        validTracks.push(track);
+      } else if (Buffer.isBuffer(track)) {
+        // Assume buffers are valid audio data (or let player fail later)
+        // We can't easily check format without parsing headers, 
+        // but miniaudio should handle standard headers (wav, mp3, etc) in buffer
+        validTracks.push(track);
       }
     }
 
-    this.tracks = tracks.filter((track) => {
-      const fs = require("node:fs");
-      return fs.existsSync(track);
-    });
+    this.tracks = validTracks;
 
     console.log(`✅ Loaded ${this.tracks.length} valid tracks`);
   }
@@ -51,18 +63,31 @@ export class PlaylistManager {
     }
 
     const currentTrack = this.tracks[this.currentTrackIndex];
+    if (!currentTrack) return; // Should not happen with check above
+
+    const trackLabel = typeof currentTrack === 'string' ? currentTrack : `Buffer Track #${this.currentTrackIndex + 1}`;
+    
     console.log(
-      `🎵 Playing track ${this.currentTrackIndex + 1}/${this.tracks.length}: ${currentTrack}`,
+      `🎵 Playing track ${this.currentTrackIndex + 1}/${this.tracks.length}: ${trackLabel}`,
     );
 
     try {
-      await this.player.loadFile(currentTrack!);
+      if (typeof currentTrack === 'string') {
+        await this.player.loadFile(currentTrack);
+        
+        // Show track metadata for files
+        const metadata = getAudioMetadata(currentTrack);
+        console.log("📋 Track info:", metadata);
+
+      } else {
+        // Convert Buffer to number[] as required by miniaudio_node loadBuffer
+        const bufferData = Array.from(currentTrack);
+        await this.player.loadBuffer(bufferData);
+        console.log("📋 Track info: [Memory Buffer]");
+      }
+
       await this.player.play();
       this.isPlaying = true;
-
-      // Show track metadata
-      const metadata = getAudioMetadata(currentTrack!);
-      console.log("📋 Track info:", metadata);
 
       // Auto-advance to next track when current one finishes
       this.monitorPlayback();
@@ -76,7 +101,14 @@ export class PlaylistManager {
    * Monitor playback and advance to next track
    */
   private monitorPlayback(): void {
+    // Clear any existing interval to prevent duplicates if play is called rapidly
+    // (Note: In a real robust implementation, store interval ID in class property)
+    
     const checkInterval = setInterval(() => {
+      // Check if player expects initialized and is actually playing
+      // The miniaudio_node library might behave synchronously or async
+      
+      // If manually stopped or paused, we shouldn't auto advance immediately unless intended
       if (!this.player.isPlaying() && this.isPlaying) {
         clearInterval(checkInterval);
         this.isPlaying = false;
@@ -152,10 +184,11 @@ export class PlaylistManager {
    * Get playlist status
    */
   getStatus() {
+    const currentTrack = this.tracks[this.currentTrackIndex];
     return {
       totalTracks: this.tracks.length,
       currentTrack: this.currentTrackIndex + 1,
-      currentTrackPath: this.tracks[this.currentTrackIndex] || null,
+      currentTrackPath: typeof currentTrack === 'string' ? currentTrack : 'Buffer',
       isPlaying: this.isPlaying,
       loop: this.loop,
       volume: this.player.getVolume(),

@@ -16,23 +16,25 @@ async function main() {
       { text: "Thank you for listening.", file: "thanks" }
     ];
 
-    const audioFiles: string[] = [];
+    const audioFiles: {savedPath: string, fileBuffer: Buffer}[] = [];
 
     for (const msg of messages) {
       console.log(`Generating: "${msg.text}"`);
-      const filePath = await tts.synthesize(
+      const ttsdata = await tts.synthesize(
         msg.text, 
         'en-US-AriaNeural', 
         msg.file
       );
-      audioFiles.push(filePath);
-      console.log(`Saved to: ${filePath}`);
+      audioFiles.push(ttsdata);
+      console.log(`Saved to: ${ttsdata.savedPath}`);
     }
 
     console.log("\n🎵 Starting playlist...");
     
     // Load tracks into playlist
-    await playlist.loadTracks(audioFiles);
+    // We can now mix paths and buffers, or just use buffers since we have them.
+    // Let's demonstrate using buffers which is the new feature.
+    await playlist.loadTracks(audioFiles.map((file) => file.fileBuffer));
 
     // Play
     await playlist.playCurrentTrack();
