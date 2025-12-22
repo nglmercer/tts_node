@@ -1,0 +1,9 @@
+# import alias from ./path/to/file.json
+# chat comment
+# ${data.comment || data.user.comment}
+- id: rule-id
+  on: chat
+  do:
+    type: TTS
+    params:
+      message: test
