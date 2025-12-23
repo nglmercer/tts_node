@@ -1,0 +1,8 @@
+{
+  "lastMessage": "Hola Cómo estás",
+  "ttsConfig": {
+    "volume": 10,
+    "voice": "ca-ES-JoanaNeural",
+    "rate": "0%"
+  }
+}
