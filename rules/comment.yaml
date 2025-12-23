@@ -4,7 +4,7 @@
 - id: rule-id
   on: chat
   if:
-    operator: AND
+    operator: OR
     conditions:
       # Compara el último guardado (limpio) con el actual limpio
       - field: ${globals.clean(data.comment)}
@@ -18,6 +18,6 @@
   do:
     mode: SEQUENCE
     actions:
-      - type: TTS
+      - type: mc
         params:
           message: ${globals.clean(data.comment)}

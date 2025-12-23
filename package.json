@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@andresaya/edge-tts": "^1.8.0",
-    "bun_plugins": "^1.0.0",
+    "bun_plugins": "^1.1.1",
     "miniaudio_node": "^1.0.1",
     "string-dac": "^1.0.0",
     "trigger_system": "^1.0.6"

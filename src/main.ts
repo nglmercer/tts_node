@@ -2,6 +2,8 @@ import { RuleBuilder, RuleEngine, ActionRegistry, ExpressionEngine,TriggerLoader
 import { PlaylistManager } from "./services/playlist";
 import { ttsSystem } from "./services/cleaner";
 import { TTSService } from "./services/audio";
+import { TtsPluginManager } from "./services/plugin";
+
 import * as fs from "fs";
 import * as path from "path";
 function ensureDir(Path:string){
@@ -18,9 +20,11 @@ const testdata = {
 const audioFiles: {savedPath: string, fileBuffer: Buffer}[] = [];
 const tts = new TTSService("./output");
 const playlist = new PlaylistManager();
+const manager = new TtsPluginManager();
+
 async function main() {
     const registry = ActionRegistry.getInstance();
-
+    await manager.loadDefaultPlugins();
     const engine = new RuleEngine({ rules: [], globalSettings: { debugMode: true } });
     const rulesDir = path.resolve(process.cwd(),"rules");
     const result = ensureDir(rulesDir);
@@ -33,6 +37,8 @@ async function main() {
         // Log current rules
         const ruleIds = engine.getRules().map(r => r.id);
         console.log(`   Current Rule IDs: ${ruleIds.join(", ")}`);
+        const loadedPlugins = manager.listPlugins();
+        console.log("Loaded plugins:", loadedPlugins);
         await testEvent(engine,"chat",testdata);
     });
     watcher.on('error', (err) => {
@@ -43,15 +49,17 @@ async function main() {
         if (!action.params?.message)return;
         const result = await ttsSystem.processMessage(String(action.params?.message))
         if (!result?.cleanedText)return;
-        const ttsdata = await tts.synthesize(
+        //const allVoices = await tts.getVoices();
+        //console.log("allVoices",allVoices);
+/*         const ttsdata = await tts.synthesize(
         result?.cleanedText, 
-        'en-US-AriaNeural', 
+        'ca-ES-JoanaNeural', 
         result?.cleanedText
         );
         audioFiles.push(ttsdata);
         await playlist.loadTracks(audioFiles.map((file) => file.fileBuffer));
 
-        await playlist.playCurrentTrack();
+        await playlist.playCurrentTrack(); */
 
         return result?.cleanedText
     })
