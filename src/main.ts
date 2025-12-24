@@ -43,7 +43,7 @@ async function main() {
         const testerPlugin = manager.getPlugin("rule-tester");
         const tester = testerPlugin?.getSharedApi ? (testerPlugin.getSharedApi() as any) : null;
         if (tester?.testEvent) {
-            await tester.testEvent(engine, "chat", testdata);
+        //    await tester.testEvent(engine, "chat", testdata);
         }
     });
     watcher.on('error', (err) => {

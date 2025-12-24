@@ -50,7 +50,7 @@ export class TTSPlugin implements IPlugin {
     const registry = ActionRegistry.getInstance();
 
     registry.register("TTS", async (action, ctx) => {
-        console.log("[TTS]", action, ctx);
+        console.log("[TTS]", action, Object.keys(ctx));
         if (!action.params?.message) return;
         const result = await ttsSystem.processMessage(String(action.params?.message));
         if (!result?.cleanedText) return;

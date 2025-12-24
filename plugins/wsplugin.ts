@@ -8,28 +8,7 @@ export interface ActionRegistryApi {
   registerHelper: (name: string, fn: Function) => void;
   getHelpers: () => Record<string, Function>;
 }
-const server = Bun.serve({
-  fetch(req, server) {
-    const success = server.upgrade(req, {
-      data: {
-        socketId: Math.random(),
-      },
-    });
-    if (success) return undefined;
-  },
-  websocket: {
-    data: {} as { socketId: number },
-    async message(ws, message) {
-        if (!validate.isWithinSize(message, 10_000_000)) return;
-        const data = validate.safeParse(message);
-        if (validate.isRecord(data) && validate.hasProps(data, ["type", "data"])) {
-            console.log("type",data.type,validate.safeLog(data.type,data.data))
-        }
-    },
-  },
-});
 
-console.log("server",server.url)
 export class wsplugin implements IPlugin {
   name = "websocket";
   version = "1.0.0";
@@ -39,7 +18,7 @@ export class wsplugin implements IPlugin {
 
   onLoad(context: PluginContext): void {
     //const registryPlugin = context.manager.getPlugin("action-registry");
-    context.emit('ws',{message:"hola"})
+    //context.emit('ws',{message:"hola"})
 /*     if (registryPlugin?.getSharedApi) {
       const api = registryPlugin.getSharedApi() as ActionRegistryApi;
       
@@ -50,20 +29,37 @@ export class wsplugin implements IPlugin {
       });
 
     } */
-        const testerPlugin = context.manager.getPlugin("rule-tester");
-        const tester = testerPlugin?.getSharedApi ? (testerPlugin.getSharedApi() as any) : null;
-        // Access the exposed engine from the manager
-        const engine = (context.manager as any).engine;
-        
-        if (tester?.testEvent && engine) {
-            console.log("tester.testEvent",tester.testEvent)
-/*             tester.testEvent(engine, "chat", {
-                nickname:"test",
-                uniqueId:"1234567890",
-                comment:"hola"
-            }); */
-        }
-    context.log.info("mcplugin inicializado");
+    const testerPlugin = context.manager.getPlugin("rule-tester");
+    const tester = testerPlugin?.getSharedApi ? (testerPlugin.getSharedApi() as any) : null;
+    // Access the exposed engine from the manager
+    const engine = (context.manager as any).engine;
+    
+    const server = Bun.serve({
+        fetch(req, server) {
+            const success = server.upgrade(req, {
+            data: {
+                socketId: Math.random(),
+            },
+            });
+            if (success) return undefined;
+        },
+        websocket: {
+            data: {} as { socketId: number },
+            async message(ws, message) {
+                if (!validate.isWithinSize(message, 10_000_000)) return;
+                const data = validate.safeParse(message);
+                if (validate.isRecord(data) && validate.hasProps(data, ["type", "data"])) {
+                    console.log("type",data.type,validate.safeLog(data.type,data.data))
+                    if (Array.isArray(data.data) && tester?.testEvent && engine) {
+                        console.log("data.data",data.data[0])
+                        tester.testEvent(engine, data.data[0], data.data[1]);
+                    
+                    }
+                }
+            },
+        },
+    });
+    console.log("server",server.url)
   }
 
   onUnload(): void {
