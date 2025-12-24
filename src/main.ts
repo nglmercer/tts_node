@@ -1,6 +1,6 @@
 import { RuleBuilder, RuleEngine, ActionRegistry, ExpressionEngine,TriggerLoader } from 'trigger_system/node';
 import { TTSService } from "./services/audio"; 
-import { TtsPluginManager } from "./services/plugin";
+import { BasePluginManager } from "./services/plugin";
 
 import * as fs from "fs";
 import * as path from "path";
@@ -16,14 +16,15 @@ const testdata = {
     nickname:"test"
 }
 // const tts = new TTSService("./output"); // Moved to plugin
-const manager = new TtsPluginManager();
+const manager = new BasePluginManager();
 
 async function main() {
     const registry = ActionRegistry.getInstance();
     await manager.loadDefaultPlugins();
     const ttsPlugin = manager.getPlugin("tts-service");
     const tts = ttsPlugin?.getSharedApi ? (ttsPlugin.getSharedApi() as TTSService) : null;
-    const engine = new RuleEngine({ rules: [], globalSettings: { debugMode: true } });
+    const engine = manager.engine;
+    
     const rulesDir = path.resolve(process.cwd(),"rules");
     const result = ensureDir(rulesDir);
     //watcher se ejecuta despues o demora al inicializar que los demas eventos

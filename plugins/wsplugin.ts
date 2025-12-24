@@ -50,7 +50,19 @@ export class wsplugin implements IPlugin {
       });
 
     } */
-
+        const testerPlugin = context.manager.getPlugin("rule-tester");
+        const tester = testerPlugin?.getSharedApi ? (testerPlugin.getSharedApi() as any) : null;
+        // Access the exposed engine from the manager
+        const engine = (context.manager as any).engine;
+        
+        if (tester?.testEvent && engine) {
+            console.log("tester.testEvent",tester.testEvent)
+/*             tester.testEvent(engine, "chat", {
+                nickname:"test",
+                uniqueId:"1234567890",
+                comment:"hola"
+            }); */
+        }
     context.log.info("mcplugin inicializado");
   }
 
