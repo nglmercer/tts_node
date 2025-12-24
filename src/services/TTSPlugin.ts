@@ -48,8 +48,7 @@ export class TTSPlugin implements IPlugin {
         await storage.set("voices", await this.ttsService.getVoices());
     }
     // Load configuration with defaults
-    // Load configuration with defaults
-    const defaults = { volume: 100, voice: 'ca-ES-JoanaNeural', rate: '0%' };
+    const defaults = { volume: 100, voice: 'es-AR-ElenaNeural', rate: '0%' };
     const config = await this.getOrCreateConfig(storage, "ttsConfig", defaults);
     log.info(`[TTSPlugin] Config loaded:`, config);
 

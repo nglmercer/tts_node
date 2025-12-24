@@ -22,13 +22,13 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install
+        run: bun i
 
       - name: Build plugins
         run: bun run build:plugins
 
       - name: Compile binaries
-        run: bun run compile
+        run: bun run build
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

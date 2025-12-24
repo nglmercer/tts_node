@@ -4,7 +4,7 @@
   "private": true,
   "module": "src/main.ts",
   "scripts": {
-    "build": "bun build ./src/main.ts --outdir ./dist --target node",
+    "build":  "bun run ./scripts/build.ts",
     "build:plugins": "bun run ./scripts/build_plugins.ts",
     "compile": "bun run ./scripts/build.ts",
     "start": "bun run ./src/main.ts",
