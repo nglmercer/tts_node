@@ -1,12 +1,12 @@
 {
   "name": "tts_node",
-
   "type": "module",
   "private": true,
   "module": "src/main.ts",
   "scripts": {
     "build": "bun build ./src/main.ts --outdir ./dist --target node",
-    "compile": "bun run build.ts",
+    "build:plugins": "bun run ./scripts/build_plugins.ts",
+    "compile": "bun run ./scripts/build.ts",
     "start": "bun run ./src/main.ts",
     "dev": "bun --watch ./src/main.ts"
   },
@@ -19,7 +19,7 @@
   "dependencies": {
     "@andresaya/edge-tts": "^1.8.0",
     "bun_plugins": "^1.1.1",
-    "miniaudio_node": "^1.0.1",
+    "miniaudio_node": "^1.0.4",
     "string-dac": "^1.0.0",
     "trigger_system": "^1.0.6"
   }

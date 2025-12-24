@@ -30,11 +30,23 @@ export class TTSPlugin implements IPlugin {
     return defaultValue;
   }
 
-
+  async getOrCreateVoices(storage: any, key: string, defaultValue: string[]): Promise<string[]> {
+    const existing = await storage.get(key);
+    if (existing !== undefined && existing !== null) {
+      return existing as string[];
+    }
+    console.log(`[${this.name}] Initializing storage for key: ${key}`);
+    await storage.set(key, defaultValue);
+    return defaultValue;
+  }
+  
   async onLoad(context: PluginContext) {
     const { storage, log } = context;
     console.log(`${this.name} initialized`);
-    
+    const allVoices = await this.getOrCreateVoices(storage, "voices", []);
+    if (!allVoices || allVoices.length === 0) {
+        await storage.set("voices", await this.ttsService.getVoices());
+    }
     // Load configuration with defaults
     // Load configuration with defaults
     const defaults = { volume: 100, voice: 'ca-ES-JoanaNeural', rate: '0%' };
@@ -58,12 +70,6 @@ export class TTSPlugin implements IPlugin {
         // Save last message
         await storage.set("lastMessage", result.cleanedText);
         
-        // Use this.ttsService instead of local tts variable
-        // const allVoices = await this.ttsService.getVoices();
-        // console.log("allVoices",allVoices);
-        
-        
-        // Retrieve fresh config before synthesis
         const currentConfig = await storage.get("ttsConfig", defaults) || defaults;
         
         const ttsdata = await this.ttsService.synthesize(
