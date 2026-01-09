@@ -1,5 +1,9 @@
 import { definePlugin, PluginContext } from "bun_plugins";
-import { Application } from '@webviewjs/webview';
+import { spawn, ChildProcess } from "child_process";
+import * as path from "path";
+
+// Referencia global al proceso webview para poder controlarlo
+let webviewProcess: ChildProcess | null = null;
 
 export default definePlugin({
     name: "tikfinity",
@@ -7,56 +11,68 @@ export default definePlugin({
     onLoad: async (context: PluginContext) => {
         console.log("🔌 Iniciando captura de credenciales TikFinity...");
 
-            const app = new Application();
-            const window = app.createBrowserWindow({
-                title: "TikTok Login - Sincronizando TikFinity",
-                width: 500,
-                height: 700
-            });
-            const injectionScript = `
-                (function () {
-                    window.TiktokPayload = "";
-                    window.getPayload = function () {
-                        return window.TiktokPayload;
-                    };
-                    const originalSend = WebSocket.prototype.send;
-                    WebSocket.prototype.send = function (data) {
-                        if (typeof data === 'string' && data.includes("setUniqueId")) {
-                            console.log("injectionScript data", data)
-                            window.TiktokPayload = data;
-                            window.ipc.postMessage(data);
-                        }
-                        return originalSend.apply(this, arguments);
-                    };
-                    console.log("💉 Interceptor de WebSocket inyectado");
-                })();   
-            `;
-            const webview = window.createWebview({
-                preload: injectionScript,
-                url: "https://tikfinity.zerody.one/",
-                enableDevtools: true
-            });
-            webview.onIpcMessage((message) => {
-            // Convertimos el Buffer del cuerpo del mensaje a texto
-                const payload = message.body.toString();
-                
-                console.log("🚀 Payload recibido desde el navegador:", payload);
+        // Ruta al script del proceso webview
+        const webviewScriptPath = path.join(__dirname, '../scripts/tikfinity-webview.ts');
+        
+        // Iniciamos el proceso hijo con Bun
+        // Bun puede ejecutar TypeScript directamente sin necesidad de compilar
+        webviewProcess = spawn('bun', ['run', webviewScriptPath], {
+            stdio: ['ignore', 'pipe', 'pipe'],
+            shell: true,
+            detached: false
+        });
 
-                if (payload.includes("setUniqueId")) {
-                    console.log("✅ Credenciales capturadas con éxito");
+        let webviewClosed = false;
+
+        // Escuchar la salida del proceso hijo para recibir el payload
+        if (webviewProcess.stdout) {
+            webviewProcess.stdout.on('data', (data) => {
+                const output = data.toString();
+                console.log("📨 Mensaje del proceso webview:", output);
+                
+                // Verificar si es el payload de TikFinity
+                if (output.includes('TikFinity_PAYLOAD:')) {
+                    const payload = output.replace('TikFinity_PAYLOAD:', '').trim();
+                    console.log("✅ Credenciales capturadas con éxito desde proceso separado");
+                    console.log("PAYLOAD:", payload);
                     
+                    // Aquí puedes procesar el payload como necesites
+                    // Por ejemplo, guardarlo en una variable, enviarlo a un servidor, etc.
                     
+                    webviewClosed = true;
                 }
             });
-            /*
-                    const app = new Application();
-                    const window = app.createBrowserWindow();
-                    const webview = window.createWebview();
-            */
+        }
 
-            app.run();
+        // Escuchar errores del proceso hijo
+        if (webviewProcess.stderr) {
+            webviewProcess.stderr.on('data', (data) => {
+                console.error("❌ Error del proceso webview:", data.toString());
+            });
+        }
+
+        // Manejar el cierre del proceso hijo
+        webviewProcess.on('close', (code) => {
+            console.log(`🔚 Proceso webview finalizado con código: ${code}`);
+            webviewClosed = true;
+            webviewProcess = null;
+        });
+
+        // Manejar errores de spawn
+        webviewProcess.on('error', (error) => {
+            console.error("❌ Error al iniciar proceso webview:", error);
+            webviewProcess = null;
+        });
+
+        console.log("🚀 Proceso webview iniciado en segundo plano");
     },
     onUnload: () => {
         console.log("tikfinity unloaded");
+        // Cerramos el proceso webview si aún está activo
+        if (webviewProcess) {
+            console.log("🛑 Cerrando proceso webview al descargar el plugin...");
+            webviewProcess.kill();
+            webviewProcess = null;
+        }
     }
 });
