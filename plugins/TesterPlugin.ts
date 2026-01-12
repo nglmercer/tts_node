@@ -1,9 +1,42 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
-import type { RuleEngine } from "trigger_system/node";
+import type { RuleEngine,ActionRegistry,ActionHandler } from "trigger_system/node";
 
 /**
  * Plugin encargado de facilitar las pruebas de eventos
  */
+/*
+  getSharedApi() {
+    const registry = this.registry;
+    const helperRegistry = this.helperRegistry;
+    return {
+      register: registry.register.bind(registry),
+      get: registry.get.bind(registry),
+      registry: registry,
+      registerHelper: helperRegistry.register.bind(helperRegistry),
+      getHelpers: helperRegistry.getHelpers.bind(helperRegistry)
+    };
+  }
+  export declare class ActionRegistry {
+      private static instance;
+      private handlers;
+      private constructor();
+      static getInstance(): ActionRegistry;
+      register(type: string, handler: ActionHandler): void;
+      get(type: string): ActionHandler | undefined;
+      private registerDefaults;
+  }
+*/
+interface ActionRegistryPlugin extends IPlugin {
+  getSharedApi(): ActionRegistryApi;
+}
+interface ActionRegistryApi {
+  register: (name: string, action: ActionHandler) => void;
+  get: (name: string) => ActionHandler | undefined;
+  registry: ActionRegistry;
+  registerHelper: (name: string, helper: any) => void;
+  getHelpers: () => Record<string, any>;
+}
+
 export class RuleTesterPlugin implements IPlugin {
   name = "rule-tester";
   version = "1.0.0";
@@ -24,10 +57,10 @@ export class RuleTesterPlugin implements IPlugin {
   async testEvent(engine: RuleEngine, event: string, data: any) {
     if (!this.context) throw new Error("Plugin no cargado");
 
-    const registryPlugin = this.context.manager.getPlugin("action-registry") as any;
+    const registryPlugin = await this.context.getPlugin("action-registry") as ActionRegistryPlugin;
     const pluginHelpers = registryPlugin?.getSharedApi?.()?.getHelpers?.() || {};
 
-    console.log(`🧪 [RuleTesterPlugin] Probando evento: ${event}`);
+    console.log(`TESTER: ${event}`);
     
     return await engine.processEvent({
       event: event,
