@@ -47,6 +47,7 @@ export default definePlugin({
                     console.log(Tiktok.logged);
                     console.log("PAYLOAD:", payload);
                     connect(payload, (message) => {
+                        //console.log("tiktok message:", message);
                         context.emit('tiktok', message);
                     });                
                     webviewClosed = true;
