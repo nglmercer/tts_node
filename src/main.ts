@@ -1,7 +1,8 @@
 import { RuleBuilder, RuleEngine, ActionRegistry, ExpressionEngine,TriggerLoader } from 'trigger_system/node';
 import { BasePluginManager } from "./services/plugin";
-import * as path from "path";
+import { parseSocketIo42Message } from "./utils/parsejson";
 import { ensureDir } from "./utils/filepath";
+import * as path from "path";
 /* const testdata = {
     comment:'¡Hola! 😊 ¿Cómo estás? 🤔  🌐 🌍🌎🌏',
     uniqueId:"1234567890",
@@ -14,9 +15,10 @@ async function main() {
     const registry = ActionRegistry.getInstance();
     await manager.loadDefaultPlugins();
     const engine = manager.engine;
-    manager.on('tiktok', (data) => {
-        console.log('TikTok event received:', data);
-        //engine.processEventSimple(data.event, data.data);
+    manager.on('tiktok', (raw) => {
+        const data = parseSocketIo42Message(raw);
+        //console.log('TikTok event received:', {raw,data});
+        engine.processEventSimple(data?.eventName!, data?.data);
     });
     const rulesDir = path.resolve(process.cwd(),"rules");
     const result = ensureDir(rulesDir);
