@@ -1,4 +1,4 @@
-import { Application } from '@webviewjs/webview';
+import { Application } from "webview-rs";
 import { definePlugin, Plugin, PluginContext } from "bun_plugins";
 /* import { getRoomId } from "./tiktok/utils.ts"
 
@@ -7,7 +7,7 @@ const UniqueId = "anyelouwu"
 const params = "?EIO=4&transport=websocket";
 const payloadTest = `42["setUniqueId","${UniqueId}",{"processInitialData":false,"channelId":160258,"auth":"b82db0e687340af0cf0ea373ca792573","forceReconnect":true}]`;
 async function connect(payload: string) {
-    // test url : wss://tikfinity-cws-04.zerody.one/socket.io/?EIO=4&transport=websocket    
+    // test url : wss://tikfinity-cws-04.zerody.one/socket.io/?EIO=4&transport=websocket
     // Definir los mensajes según el protocolo de Socket.io
     const engineIoGuiño = "40"; // Mensaje de conexión de Engine.io
     const socket = new WebSocket(`${baseUrl}${params}`);
@@ -17,7 +17,7 @@ async function connect(payload: string) {
 
         // 2. Enviar el mensaje de apertura de Socket.io (40)
         socket.send(engineIoGuiño);
-        
+
         // 3. Enviar el evento específico (42 + JSON)
         // Nota: A veces el servidor espera unos milisegundos después del "40"
         setTimeout(() => {
@@ -47,27 +47,27 @@ async function connect(payload: string) {
 (async () => {
     const roomId = await getRoomId(UniqueId);
     console.log("Room ID:", roomId);
-    
+
 })(); */
 export class webclass extends Plugin {
-    name = "webview";
-    version = "1.0.0";
+  name = "webview";
+  version = "1.0.0";
 
-    override onLoad(context: PluginContext) {
-        console.log("webview plugin loaded");
-        context.emit('load:webview',{});
-    }
+  override onLoad(context: PluginContext) {
+    console.log("webview plugin loaded");
+    context.emit("load:webview", {});
+  }
 
-    open({url, debug = true}: {url:string, debug?:boolean}){
-        const app = new Application();
-        const window = app.createBrowserWindow();
-        const webview = window.createWebview();
-        if (!url) return undefined;
-        const web = webview.loadUrl(url);
-        console.log("Opening webview with URL:", url,webview);
-        app.run();
-        return web;
-    }
-};
+  open({ url, debug = true }: { url: string; debug?: boolean }) {
+    const app = new Application();
+    const window = app.createBrowserWindow();
+    const webview = window.createWebview();
+    if (!url) return undefined;
+    const web = webview.loadUrl(url);
+    console.log("Opening webview with URL:", url, webview);
+    app.run();
+    return web;
+  }
+}
 /* const newclass = new webclass();
 newclass.open({url: "https://tikfinity.zerody.one/"}); */
