@@ -56,7 +56,44 @@ export function parseSocketIo42Message<
 
   return null;
 }
+export enum SocketIoPacketType {
+  OPEN = '0',
+  CLOSE = '1',
+  PING = '2',
+  PONG = '3',
+  MESSAGE = '4',
+  UPGRADE = '5',
+  NOOP = '6',
+}
 
+export enum SocketIoMessageType {
+  CONNECT = '0',
+  DISCONNECT = '1',
+  EVENT = '2',
+  ACK = '3',
+  ERROR = '4',
+  BINARY_EVENT = '5',
+  BINARY_ACK = '6',
+}
+export function SocketIoMessage(message: string) {
+  if (!message || message.length < 1) return null;
+
+  const engineType = message[0]; 
+  // El socketType solo existe si engineType es '4' (MESSAGE)
+  const socketType = engineType === '4' ? message[1] : undefined;
+
+  // Determinamos dónde empieza el JSON real
+  // Si es '42', el JSON empieza en el índice 2. Si es '2' (PING), no hay JSON.
+  const payloadOffset = engineType === '4' ? 2 : 1;
+  const payloadRaw = message.substring(payloadOffset);
+
+  return {
+    engineType,
+    socketType,
+    isData: message.startsWith('42'),
+    payloadRaw
+  };
+}
 /**
  * Parsea un string JSON genérico con manejo de errores
  * @param jsonString - String JSON a parsear

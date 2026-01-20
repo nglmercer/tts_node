@@ -2,7 +2,7 @@ import { definePlugin, PluginContext } from "bun_plugins";
 import { spawn, ChildProcess } from "child_process";
 import * as path from "path";
 import { connect } from "./tiktok/websocket";
-import { parseSocketIo42Message } from "../utils/parsejson";
+import { parseSocketIo42Message, SocketIoMessage } from "../utils/parsejson";
 // Referencia global al proceso webview para poder controlarlo
 let webviewProcess: ChildProcess | null = null;
 const logsMap = {
@@ -22,7 +22,6 @@ export default definePlugin({
     version: "1.0.0",
     onLoad: async (context: PluginContext) => {
         console.log(logsMap.started);
-
         // Ruta al script del proceso webview
         const webviewScriptPath = path.join(__dirname, '../scripts/tikfinity-webview.ts');
         
@@ -45,14 +44,20 @@ export default definePlugin({
                 // Verificar si es el payload de TikFinity
                 if (output.includes(Tiktok.Payload)) {
                     const payload = output.replace(Tiktok.Payload, '').trim();
-                    console.log(Tiktok.logged);
-                    console.log("PAYLOAD:", payload);
+                    //console.log(Tiktok.logged);
+                    //console.log("PAYLOAD:", payload);
                     connect(payload, (message) => {
                         // Por defecto: procesar mensaje raw y emitir como { eventName, data }
+                        const info = SocketIoMessage(message);
+                        if (!message || !info) return;
+                        if (info.engineType?.length === 1) return;
                         const data = parseSocketIo42Message(message);
-                        const eventName = data?.eventName || 'generic';
+                        if (!data || !data.eventName) {
+                            console.log(info);
+                            return;
+                        }
+                        const eventName = data.eventName;
                         const eventData = data?.data || message;
-                        
                         context.emit('tiktok', {
                             eventName,
                             data: eventData

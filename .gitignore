@@ -40,3 +40,5 @@ output
 storage
 plugin-types/*.d.ts
 package-lock.json
+/data
+*.wav
