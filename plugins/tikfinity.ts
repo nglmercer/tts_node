@@ -3,6 +3,7 @@ import { spawn, ChildProcess } from "child_process";
 import * as path from "path";
 import { connect } from "./tiktok/websocket";
 import { parseSocketIo42Message, SocketIoMessage } from "../utils/parsejson";
+import { getBaseDir } from "../utils/filepath";
 // Referencia global al proceso webview para poder controlarlo
 let webviewProcess: ChildProcess | null = null;
 const logsMap = {
@@ -23,7 +24,9 @@ export default definePlugin({
     onLoad: async (context: PluginContext) => {
         console.log(logsMap.started);
         // Ruta al script del proceso webview
-        const webviewScriptPath = path.join(__dirname, '../scripts/tikfinity-webview.ts');
+        // En desarrollo: scripts/tikfinity-webview.ts
+        // En producción (compilado): dist/scripts/tikfinity-webview.ts (relativo al ejecutable)
+        const webviewScriptPath = path.join(getBaseDir(), 'scripts/tikfinity-webview.ts');
         
         // Iniciamos el proceso hijo con Bun
         // Bun puede ejecutar TypeScript directamente sin necesidad de compilar
