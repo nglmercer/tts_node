@@ -1,5 +1,7 @@
 import { pipeline, TextToAudioOutput, TextToAudioPipelineOptions, env } from '@huggingface/transformers';
-import { detectLanguage,type DetectionResult } from 'plugins/ai/llmstudio';
+
+
+
 import * as fs from 'fs';
 import * as path from 'path';
 

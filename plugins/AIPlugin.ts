@@ -1,7 +1,8 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
-import { initializeAI, runWithTools } from "./ai/index";
 import { ActionRegistry } from "trigger_system/node";
 import { ACTIONS, LOG_MESSAGES } from "../src/constants";
+import { createCommentResponder } from 'plugins/ai/workflow';
+// Create responder with built-in semantic memory for context-aware responses
 
 export class AIPlugin implements IPlugin {
   name = "ai-service";
@@ -12,15 +13,18 @@ export class AIPlugin implements IPlugin {
     console.log(`${this.name} initialized`);
 
     // Initialize AI module
-    const { lmStudio, database } = await initializeAI();
-    if (!lmStudio || !database) {
-      log.warn("AI module not fully available. LM Studio:", lmStudio, "Database:", database);
-    } else {
-      log.info("AI module initialized successfully");
-    }
 
     const registry = ActionRegistry.getInstance();
-
+    const responder = createCommentResponder({
+      onResponse: (response) => {
+        console.log(`\n🤖 bot: ${response.response}`);
+      },
+      onDecision: (_msg, decision) => {
+        console.log('  [Decision:', decision.decision, ']');
+      },
+      minPriorityToRespond: 1,
+      batchSize: 5,
+    });
     // Register AI_RESPOND action
     registry.register(ACTIONS.AI_RESPOND, async (action, ctx) => {
       console.log(`[${ACTIONS.AI_RESPOND}]`, action, Object.keys(ctx));
@@ -28,10 +32,14 @@ export class AIPlugin implements IPlugin {
         log.warn("No prompt provided for AI_RESPOND");
         return null;
       }
-
+      const user = String(action.params.user)
       const prompt = String(action.params.prompt);
       try {
-        const response = await runWithTools(prompt);
+        const response = await responder.submit({
+          id: crypto.randomUUID(),
+          author: user,
+          content: prompt
+        })
         return response;
       } catch (error) {
         log.error("AI_RESPOND error:", error);
