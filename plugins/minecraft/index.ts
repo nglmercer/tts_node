@@ -1,0 +1,1 @@
+// use variable to export default plugin with rcon or p2p
