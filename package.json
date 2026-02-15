@@ -21,11 +21,9 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "^2.0.8",
     "@ai-sdk/openai": "^3.0.12",
     "@huggingface/transformers": "^3.8.1",
     "@lancedb/lancedb": "^0.23.0",
-    "@lmstudio/sdk": "^1.5.0",
     "ai": "^6.0.42",
     "arktype": "^2.1.29",
     "bun_plugins": "1.2.5",
