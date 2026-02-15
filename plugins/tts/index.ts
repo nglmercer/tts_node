@@ -69,6 +69,7 @@ class SupertonicTTS {
         if (!SupertonicTTS.instance) {
             SupertonicTTS.instance = await pipeline('text-to-speech', 'onnx-community/Supertonic-TTS-2-ONNX', {
                 device: 'cpu',
+                dtype: 'q8'
             });
         }
         return SupertonicTTS.instance;
@@ -144,9 +145,10 @@ export class TTSService {
             
             // Parse rate option to speed multiplier
             const speed = this.parseRateToSpeed(options.rate);
-            
+            // speak text if is short, else if low text use _raw?.summary
+            const textToSpeak = text.length < 50 ? text : _raw?.summary || text;
             // Generate audio
-            const audio = await this.supertonic.speak(this._preprocessText(_raw?.summary || text,detectedLang), voiceKey, { 
+            const audio = await this.supertonic.speak(this._preprocessText(textToSpeak,detectedLang), voiceKey, { 
                 speed: speed,
                 num_inference_steps: 5
             });

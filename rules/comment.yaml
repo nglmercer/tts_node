@@ -6,6 +6,11 @@
   if:
     operator: AND
     conditions:
+      # Quality filter - skips gibberish, repetitive patterns, etc.
+      # See: plugins/ai/constants.ts for configuration
+      - field: ${data.comment}
+        operator: NOT_IN
+        value: ["!ia","!ai"]
       # Evita duplicados: compara el último mensaje con el actual
       - field: ${globals.clean(data.comment)}
         operator: NEQ
@@ -20,12 +25,6 @@
       - field: ${globals.clean(data.comment).length}
         operator: GT
         value: 3
-
-      # Quality filter - skips gibberish, repetitive patterns, etc.
-      # See: plugins/ai/constants.ts for configuration
-      - field: ${data.comment}
-        operator: NOT_IN
-        value: ["!ia","!ai"]
   do:
     mode: SEQUENCE
     actions:

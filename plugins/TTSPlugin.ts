@@ -96,12 +96,7 @@ export class TTSPlugin implements IPlugin {
       if (!action.params?.message) return;
       let result = await TTScleaner.processMessage(String(action.params?.message));
       if (!result?.cleanedText) return;
-      
-      // Check message quality before processing
-      if (result.quality && !result.quality.isHighQuality) {
-        log.info(`[TTS] Skipping low quality message. Score: ${result.quality.score}`, result.quality.reasons);
-        return;
-      }
+  
       
       // Save last message
       await storage.set(STORAGE_KEYS.LAST_MESSAGE, result.cleanedText);

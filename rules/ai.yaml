@@ -5,6 +5,10 @@
   if:
     operator: AND
     conditions:
+      - field: ${data.comment}
+        #this value is a command to trigger the ai
+        operator: CONTAINS
+        value: ["!ia","!ai"]
       # Compara el último guardado (limpio) con el actual limpio
       - field: ${globals.clean(data.comment)}
         operator: NEQ
@@ -20,10 +24,6 @@
         operator: GT
         value: 3
 
-      - field: ${data.comment}
-        #this value is a command to trigger the ai
-        operator: CONTAINS
-        value: ["!ia","!ai"]
   do:
     mode: SEQUENCE
     actions:

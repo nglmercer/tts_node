@@ -14,6 +14,8 @@ export default definePlugin({
     name: "minecraft-rcon",
     version: "1.0.0",
     async onLoad(context: PluginContext) {
+        // comment this if your need rcon
+        return
         const registryPlugin = await getRegistryPlugin(context);
     
         if (!registryPlugin) return;
