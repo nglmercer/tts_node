@@ -72,7 +72,7 @@ class SupertonicTTS {
         if (!SupertonicTTS.instance) {
             SupertonicTTS.instance = await pipeline('text-to-speech', 'onnx-community/Supertonic-TTS-2-ONNX', {
                 device: 'cpu',
-                dtype: 'q8'
+                // dtype: 'q8' // q8 not exist in this model
             });
         }
         return SupertonicTTS.instance;
