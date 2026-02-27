@@ -15,13 +15,14 @@ import {
 let webviewProcess: ChildProcess | null = null;
 // Referencia a la conexión WebSocket para poder cerrarla limpiamente
 let wsConnection: TikTokWebSocket | null = null;
-
+const p_name = "tikfinity";
+const enabled = process.env[p_name];
 export default definePlugin({
-  name: "tikfinity",
+  name: p_name,
   version: "1.0.0",
   onLoad: async (context: PluginContext) => {
     console.log(LOG_MESSAGES.WEBVIEW.STARTED);
-
+    if (enabled === 'false')return;
     // Ruta al script del proceso webview
     // En desarrollo: scripts/tikfinity-webview.ts
     // En producción (compilado): dist/scripts/tikfinity-webview.ts (relativo al ejecutable)
