@@ -25,7 +25,7 @@ export class ExampleDiscoveryPlugin implements IPlugin {
   async onLoad(context: PluginContext) {
     console.log(`${this.name} v${this.version} onLoad`);
     const registryPlugin = await getRegistryPlugin(context);
-    //console.log("registryPlugin", registryPlugin);
+    console.log("registryPlugin", typeof registryPlugin);
     if (!registryPlugin) return;
     // Registrar servicios manualmente (ejemplo)
     // this.registerServices(registryPlugin);
@@ -51,7 +51,7 @@ export class ExampleDiscoveryPlugin implements IPlugin {
       if (!service || discovery.filter({ name: serviceName }).length === 0){
         return { error: "no service", service }
       }
-      
+      console.log("SEND_WEBHOOK", action,service);  
       ///webhook/alert
       const url = `/webhook/alert`;
       try {

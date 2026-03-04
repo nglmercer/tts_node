@@ -2,7 +2,8 @@ import type { IPlugin, PluginContext } from "bun_plugins";
 import type { ActionHandler } from "trigger_system/node";
 import { ActionRegistry } from "trigger_system/node";
 import { Discovery } from "./discover/index.js";
-import { PLUGIN_NAMES } from "src/constants.js";
+import { PLUGIN_NAMES, HELPERS } from "../constants.js";
+import { TTScleaner } from "./cleaner.js";
 /**
  * Plugin que expone:
  * - ActionRegistry para registrar acciones
@@ -35,7 +36,7 @@ export interface DiscoveryOptions {
 /**
  * Registro simple para funciones auxiliares (helpers/vars)
  */
-class HelperRegistry {
+export class HelperRegistry {
   private static instance: HelperRegistry;
   private helpers: Record<string, Function> = {};
 
@@ -68,15 +69,17 @@ export class ActionRegistryPlugin implements IPlugin {
 
   public discovery: Discovery | null = null;
 
-  private get registry() {
+  public get registry() {
     return ActionRegistry.getInstance();
   }
 
-  private get helperRegistry() {
+  public get helperRegistry() {
     return HelperRegistry.getInstance();
   }
 
-  public Helpers = this.helperRegistry.getHelpers();
+  get Helpers() {
+    return this.helperRegistry.getHelpers();
+  }
   constructor() {
     console.log(`${this.name} v${this.version}`);
     this.getSharedApi = this.getSharedApi.bind(this);
@@ -85,6 +88,15 @@ export class ActionRegistryPlugin implements IPlugin {
 
   onLoad(context: PluginContext) {
     console.log(`${this.name} v${this.version} onLoad`);
+    this.helperRegistry.register(HELPERS.LAST, () => {
+      const history = TTScleaner.getMessageHistory();
+      const lastItem = history[history.length - 1];
+      return lastItem ? lastItem.cleanedText : "";
+    });
+
+    this.helperRegistry.register(HELPERS.CLEAN, (t: any) => {
+      return TTScleaner.cleanOnly(String(t || ""));
+    });
   }
 
   onUnload() {

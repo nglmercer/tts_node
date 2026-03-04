@@ -12,17 +12,17 @@ async function main() {
   await manager.loadDefaultPlugins();
   const engine = manager.engine;
 
-  const registryPlugin = (await manager.getPlugin(
-    PLUGIN_NAMES.ACTION_REGISTRY
-  )) as ActionRegistryPlugin;
-  //console.log("Helpers:", registryPlugin);
   
-  const pluginHelpers = registryPlugin.Helpers || {};
-
   console.log("[MAIN]", Object.values(PLATFORMS));
   Object.values(PLATFORMS).forEach((platform) => {
-    manager.on(platform, ({ eventName, data }) => {
-      //console.log({ eventName, data });
+    manager.on(platform, async ({ eventName, data }) => {
+      const registryPlugin = (await manager.getPlugin(
+        PLUGIN_NAMES.ACTION_REGISTRY
+      )) as ActionRegistryPlugin;
+      //console.log("Helpers:", registryPlugin);
+      
+      const pluginHelpers = registryPlugin.Helpers;
+      console.log(pluginHelpers,registryPlugin);
       if (!eventName || !data) {
         return;
       }
