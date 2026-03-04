@@ -48,10 +48,11 @@ export class ExampleDiscoveryPlugin implements IPlugin {
       const discovery = registryPlugin.discovery as Discovery;
       const serviceName = 'overlay-service';
       const service = discovery.createClient(serviceName);
-      if (!service || discovery.filter({ name: serviceName }).length === 0){
+      if (discovery.filter({ name: serviceName }).length === 0){
+        console.log("webhook, services:",discovery.getInternalRegistry().getAll())
         return { error: "no service", service }
       }
-      console.log("SEND_WEBHOOK", action,service);  
+      //console.log("SEND_WEBHOOK", action,service);  
       ///webhook/alert
       const url = `/webhook/alert`;
       try {
@@ -68,6 +69,11 @@ export class ExampleDiscoveryPlugin implements IPlugin {
         }
 
         const response = await service.post(url, fetchOptions);
+        if (!response.ok) {
+          const msg = { error: "response not ok", response }
+          console.log("response",response)
+          return msg
+        }
         const data = await response.text();
         
         return {
@@ -81,7 +87,8 @@ export class ExampleDiscoveryPlugin implements IPlugin {
 
     // Acción para listar servicios disponibles
     registryPlugin.register('EXAMPLE_LIST_SERVICES', async (_action, _context) => {
-      return {  };
+      const discovery = registryPlugin.discovery as Discovery;
+      return { services: discovery.getInternalRegistry().getAll() };
     });
 
   }

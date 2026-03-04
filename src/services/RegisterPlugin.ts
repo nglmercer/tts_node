@@ -122,6 +122,7 @@ export class ActionRegistryPlugin implements IPlugin {
 
     this.discovery = new Discovery(serviceInfo, port, options);
     console.log(`[Discovery] Inicializado: ${serviceInfo.name} en puerto ${port}`);
+    this.discovery.start()
     return this.discovery;
   }
 

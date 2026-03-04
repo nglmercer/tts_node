@@ -22,7 +22,7 @@ async function main() {
       //console.log("Helpers:", registryPlugin);
       
       const pluginHelpers = registryPlugin.Helpers;
-      console.log(pluginHelpers,registryPlugin);
+      //console.log(pluginHelpers,registryPlugin);
       if (!eventName || !data) {
         return;
       }

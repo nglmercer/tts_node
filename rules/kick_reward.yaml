@@ -1,32 +1,16 @@
-# @import data from '../../data/ChatMessageEvent.json'
+# @import data from '../../data/RewardRedeemed.json'
 # Chat comment rule - TTS processing with quality filtering
 # Quality filter configuration is in plugins/ai/constants.ts
-- id: ChatMessageEvent-id
-  on: ChatMessageEvent
+- id: RewardRedeemed-id
+  on: RewardRedeemed
   if:
-    operator: AND
-    conditions:
-      # Quality filter - skips gibberish, repetitive patterns, etc.
-      # See: plugins/ai/constants.ts for configuration
-      - field: ${data.content}
-        operator: NOT_IN
-        value: ["!ia","!ai"]
-      # Evita duplicados: compara el último mensaje con el actual
-      - field: ${vars.clean(data.content)}
-        operator: NEQ
-        value: ${vars.clean(vars.last())}
-
-      # Evita mensajes vacíos después de limpiar
-      - field: ${vars.clean(data.content)}
-        operator: NOT_IN
-        value: ["", null, undefined]
+    - field: ${data.reward_title}
+      operator: EQ
+      value: "gen1"
       
   do:
     mode: SEQUENCE
     actions:
-      - type: TTS
-        params:
-          message: ${data.content}
       - type: SEND_WEBHOOK
         params:
           method: POST
@@ -41,4 +25,8 @@
           #}
           #{   "id": "5de9c752-98b7-4bea-aea4-44b8c4b893ba",   "boxId": "1",   "type": "kick_reward_redeemed",   "name": "Kick: Recompensa Canjeada Variant",   "condition": "Cuando un usuario canjea una recompensa del canal en Kick",   "duration": 5,   "animationIn": "fade-in",   "animationOut": "fade-out",   "animationInDuration": 1,   "animationOutDuration": 1,   "layout": "text-below",   "bgColor": "#000000",   "bgOpacity": 0,   "padding": 16,   "spacing": 8,   "rounded": true,   "shadow": true,   "message": "{username} canjeó {reward_title}!",   "fontFamily": "Inter, sans-serif",   "fontWeight": "normal",   "fontSize": 16,   "textAlign": "left",   "textColor": "#ffffff",   "highlightColor": "#ff0000",   "textShadow": false,   "imageScale": 50,   "imageVolume": 50,   "soundVolume": 50,   "active": true,   "soundUrl": "http://127.0.0.1:44419/uploads/video/284d748a-579d-47f4-9360-ccbe9c45146d.mp4",   "soundName": "Gato Ohhh.mp4",   "imageUrl": "http://127.0.0.1:44419/uploads/video/284d748a-579d-47f4-9360-ccbe9c45146d.mp4",   "imageName": "Gato Ohhh.mp4" }
           body:
-            content: "{eventName: 'kick', data: {username: '${data.sender.username}',message: '${data.content}'}}"
+            type: 'alert'
+            eventName: 'kick_reward_redeemed'
+            data: {username: '${data.username}', reward_title: '${data.reward_title}', message: '${data.user_input}'}
+            target: {id: '24f7c105-e244-4bbb-938a-f447d64dbfa0'}
+            #"{eventName: 'kick_reward_redeemed', data: {username: '${data.sender.username}',message: '${data.content}'},target: {id: '5de9c752-98b7-4bea-aea4-44b8c4b893ba'}}"
