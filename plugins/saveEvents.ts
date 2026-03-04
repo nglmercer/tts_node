@@ -13,7 +13,7 @@ export class saveDataPlugin implements IPlugin {
     const registryPlugin = await getRegistryPlugin(context);
     if (!registryPlugin) return;
 
-    registryPlugin.registry.register(ACTIONS.AUTOSAVE, (action, ctx) => {
+    registryPlugin.registry?.register(ACTIONS.AUTOSAVE, (action, ctx) => {
       const msg = String(action?.params?.message);
       if (!msg)return;
       if (msg === 'true' || msg === '1'){

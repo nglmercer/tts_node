@@ -1,12 +1,14 @@
 import type { IPlugin,PluginContext } from "bun_plugins";
 import type { ActionRegistry } from "trigger_system/node";
-import { PLUGIN_NAMES } from "src/constants";
+import type { ServiceInfo,Discovery,DiscoveryOptions } from "../../src/services/discover";
+import { PLUGIN_NAMES } from "../../src/constants";
 export interface ActionRegistryApi extends IPlugin {
   register: ActionRegistry["register"];
   get: ActionRegistry["get"];
-  registry: ActionRegistry;
+  registry?: ActionRegistry | null;
   registerHelper: (name: string, fn: Function) => void;
   getHelpers: () => Record<string, Function>;
+  discovery?: Discovery | null;
 }
 export async function getRegistryPlugin(context: PluginContext){
     const registryPlugin = (await context.getPlugin(

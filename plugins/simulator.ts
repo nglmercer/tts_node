@@ -29,7 +29,7 @@ export class simulatorPlugin implements IPlugin {
      * - filePath: Path to the JSON file containing the event data
      * - platform: (Optional) The platform to emit on (defaults to tiktok)
      */
-    registryPlugin.registry.register(ACTIONS.EMIT_EVENT, async (action) => {
+    registryPlugin.registry?.register(ACTIONS.EMIT_EVENT, async (action) => {
       if (!this.enabled) {
         console.log("[Simulator] Simulator is disabled");
         return false;
@@ -76,7 +76,7 @@ export class simulatorPlugin implements IPlugin {
      * Params:
      * - enabled: boolean (optional, toggles if not provided)
      */
-    registryPlugin.registry.register("toggle_simulator", (action) => {
+    registryPlugin.registry?.register("toggle_simulator", (action) => {
       const value = action?.params?.enabled;
       if (typeof value === "boolean") {
         this.enabled = value;

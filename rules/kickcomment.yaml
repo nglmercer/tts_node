@@ -27,3 +27,18 @@
       - type: TTS
         params:
           message: ${data.content}
+      - type: SEND_WEBHOOK
+        params:
+          method: POST
+          #{
+          #  "eventName": "seguimientos",
+          #  "data": { "username": "viewer123" },
+          #  "target": {
+          #    "id": "variant-uuid-123"      // OR
+          #    // "name": "My Variant Name"   // OR
+          #    // "random": true
+          #  }
+          #}
+          #{   "id": "5de9c752-98b7-4bea-aea4-44b8c4b893ba",   "boxId": "1",   "type": "kick_reward_redeemed",   "name": "Kick: Recompensa Canjeada Variant",   "condition": "Cuando un usuario canjea una recompensa del canal en Kick",   "duration": 5,   "animationIn": "fade-in",   "animationOut": "fade-out",   "animationInDuration": 1,   "animationOutDuration": 1,   "layout": "text-below",   "bgColor": "#000000",   "bgOpacity": 0,   "padding": 16,   "spacing": 8,   "rounded": true,   "shadow": true,   "message": "{username} canjeó {reward_title}!",   "fontFamily": "Inter, sans-serif",   "fontWeight": "normal",   "fontSize": 16,   "textAlign": "left",   "textColor": "#ffffff",   "highlightColor": "#ff0000",   "textShadow": false,   "imageScale": 50,   "imageVolume": 50,   "soundVolume": 50,   "active": true,   "soundUrl": "http://127.0.0.1:44419/uploads/video/284d748a-579d-47f4-9360-ccbe9c45146d.mp4",   "soundName": "Gato Ohhh.mp4",   "imageUrl": "http://127.0.0.1:44419/uploads/video/284d748a-579d-47f4-9360-ccbe9c45146d.mp4",   "imageName": "Gato Ohhh.mp4" }
+          body:
+            content: "{eventName: 'kick', data: {username: '${data.sender.username}',message: '${data.content}'}}"

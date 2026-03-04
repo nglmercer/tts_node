@@ -1,7 +1,7 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
-import { PLUGIN_NAMES, ACTIONS, HELPERS,PLATFORMS } from "../src/constants";
+import { ACTIONS,PLATFORMS } from "../src/constants";
 import { getRegistryPlugin } from "./Interface/ActionRegistryApi";
-import { startListener,simulateEvent,EventTypeValue,stringKeyToKeycode,type KeyCode } from "rdev-node";
+import { simulateEvent,EventTypeValue,stringKeyToKeycode } from "rdev-node";
 import { InputManager } from "./input/main"
 export class inputPlugin implements IPlugin {
   name = "input-plugin";
@@ -14,7 +14,7 @@ export class inputPlugin implements IPlugin {
     const inputManager = new InputManager();
     const registryPlugin = await getRegistryPlugin(context);
     if (!registryPlugin) return;
-    registryPlugin.registry.register(ACTIONS.SEVENT, (action, ctx) => {
+    registryPlugin.registry?.register(ACTIONS.SEVENT, (action, ctx) => {
         const keysParam = action?.params?.keys || action?.params?.key;
         const type = String(action?.params?.type || "Tap"); 
         

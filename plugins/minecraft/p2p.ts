@@ -181,8 +181,8 @@ export default definePlugin({
         context.on('minecraft:command', (command: string | string[]) => {
             manager.sendMultiple(getArray(command));
         });
-
-        registryPlugin.registry.register(ACTIONS.MC_COMMAND, (action, _ctx) => {
+        
+        registryPlugin.registry?.register(ACTIONS.MC_COMMAND, (action, _ctx) => {
             const msg = String(action?.params?.message);
             manager.sendMultiple(getArray(msg));
         });

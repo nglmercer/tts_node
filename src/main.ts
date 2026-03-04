@@ -15,6 +15,8 @@ async function main() {
   const registryPlugin = (await manager.getPlugin(
     PLUGIN_NAMES.ACTION_REGISTRY
   )) as ActionRegistryPlugin;
+  //console.log("Helpers:", registryPlugin);
+  
   const pluginHelpers = registryPlugin.Helpers || {};
 
   console.log("[MAIN]", Object.values(PLATFORMS));

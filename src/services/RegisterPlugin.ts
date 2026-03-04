@@ -1,7 +1,8 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
+import type { ActionHandler } from "trigger_system/node";
 import { ActionRegistry } from "trigger_system/node";
 import { Discovery } from "./discover/index.js";
-
+import { PLUGIN_NAMES } from "src/constants.js";
 /**
  * Plugin que expone:
  * - ActionRegistry para registrar acciones
@@ -61,46 +62,11 @@ class HelperRegistry {
   }
 }
 
-/**
- * Registry simple para servicios descubiertos
- */
-class ServiceRegistry {
-  private static instance: ServiceRegistry;
-  private services: Map<string, ServiceInfo> = new Map();
-
-  private constructor() {}
-
-  static getInstance(): ServiceRegistry {
-    if (!ServiceRegistry.instance) {
-      ServiceRegistry.instance = new ServiceRegistry();
-    }
-    return ServiceRegistry.instance;
-  }
-
-  register(name: string, info: ServiceInfo) {
-    this.services.set(name, info);
-    console.log(`[ServiceRegistry] Servicio registrado: ${name}`);
-  }
-
-  get(name: string): ServiceInfo | undefined {
-    return this.services.get(name);
-  }
-
-  getAll(): ServiceInfo[] {
-    return Array.from(this.services.values());
-  }
-
-  unregister(name: string) {
-    this.services.delete(name);
-    console.log(`[ServiceRegistry] Servicio eliminado: ${name}`);
-  }
-}
-
 export class ActionRegistryPlugin implements IPlugin {
-  name = "ActionRegistryPlugin";
+  name = PLUGIN_NAMES.ACTION_REGISTRY;
   version = "1.0.0";
 
-  private _discovery: Discovery | null = null;
+  public discovery: Discovery | null = null;
 
   private get registry() {
     return ActionRegistry.getInstance();
@@ -110,13 +76,11 @@ export class ActionRegistryPlugin implements IPlugin {
     return HelperRegistry.getInstance();
   }
 
-  private get serviceRegistry() {
-    return ServiceRegistry.getInstance();
-  }
-
+  public Helpers = this.helperRegistry.getHelpers();
   constructor() {
     console.log(`${this.name} v${this.version}`);
     this.getSharedApi = this.getSharedApi.bind(this);
+    this.discovery = this.initDiscovery({ name: 'plugin-b-service', version: '1.0.0' }, 0);
   }
 
   onLoad(context: PluginContext) {
@@ -126,9 +90,9 @@ export class ActionRegistryPlugin implements IPlugin {
   onUnload() {
     console.log(`${this.name} v${this.version} onUnload`);
     // Limpiar discovery al descargar
-    if (this._discovery) {
-      this._discovery.stop();
-      this._discovery = null;
+    if (this.discovery) {
+      this.discovery.stop();
+      this.discovery = null;
     }
   }
 
@@ -139,28 +103,28 @@ export class ActionRegistryPlugin implements IPlugin {
    * @param options Opciones de configuración
    */
   initDiscovery(serviceInfo: ServiceInfo, port: number, options?: DiscoveryOptions): Discovery {
-    if (this._discovery) {
+    if (this.discovery) {
       console.warn('[Discovery] Ya está inicializado, deteniendo anterior...');
-      this._discovery.stop();
+      this.discovery.stop();
     }
 
-    this._discovery = new Discovery(serviceInfo, port, options);
+    this.discovery = new Discovery(serviceInfo, port, options);
     console.log(`[Discovery] Inicializado: ${serviceInfo.name} en puerto ${port}`);
-    return this._discovery;
+    return this.discovery;
   }
 
   /**
    * Obtiene la instancia de Discovery activa
    */
   getDiscovery(): Discovery | null {
-    return this._discovery;
+    return this.discovery;
   }
-
+  register(name: string, fn: ActionHandler) {
+    this.registry.register(name, fn);
+  }
   getSharedApi() {
     const registry = this.registry;
     const helperRegistry = this.helperRegistry;
-    const serviceRegistry = this.serviceRegistry;
-    const discovery = this._discovery;
 
     return {
       // Action Registry
@@ -172,21 +136,7 @@ export class ActionRegistryPlugin implements IPlugin {
       registerHelper: helperRegistry.register.bind(helperRegistry),
       getHelpers: helperRegistry.getHelpers.bind(helperRegistry),
       getHelper: helperRegistry.get.bind(helperRegistry),
-      
-      // Service Registry
-      registerService: serviceRegistry.register.bind(serviceRegistry),
-      getService: serviceRegistry.get.bind(serviceRegistry),
-      getAllServices: serviceRegistry.getAll.bind(serviceRegistry),
-      unregisterService: serviceRegistry.unregister.bind(serviceRegistry),
-      
-      // Discovery
-      initDiscovery: this.initDiscovery.bind(this),
-      getDiscovery: () => discovery,
     };
-  }
-
-  get Helpers() {
-    return this.helperRegistry.getHelpers();
   }
 }
 
