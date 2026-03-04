@@ -204,8 +204,6 @@ export const ACTIONS = {
 export const HELPERS = {
   LAST: "last",
   CLEAN: "clean",
-  IS_HIGH_QUALITY: "isHighQuality",
-  EVALUATE_QUALITY: "evaluateQuality",
 } as const;
 
 // ============================================================================

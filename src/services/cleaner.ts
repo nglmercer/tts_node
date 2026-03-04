@@ -13,7 +13,6 @@ export interface TTSMessage {
   text: string;
   cleanedText: string;
   timestamp: number;
-  quality?: QualityResult;
 }
 
 // Almacenamiento minimalista de mensajes
@@ -42,23 +41,14 @@ export const CleanerUtils = {
    */
   registerMessage(text: string, skipQualityCheck: boolean = false): TTSMessage {
     const cleaned = this.cleanText(text);
-    const quality = evaluateMessageQuality(cleaned);
     
     const message: TTSMessage = {
       text,
       cleanedText: cleaned,
       timestamp: Date.now(),
-      quality
     };
     
     history.push(message);
-    
-    // Log with quality info
-    const qualityIcon = quality.isHighQuality ? '✅' : '⚠️';
-    console.log(`[Cleaner] ${qualityIcon} Message registered. Score: ${quality.score}. History: ${history.length}. Last: "${cleaned}"`);
-    if (!quality.isHighQuality && quality.reasons.length > 0) {
-      console.log(`[Cleaner] ⚠️ Low quality reasons:`, quality.reasons);
-    }
     
     // Mantener un historial circular limitado
     if (history.length > 50) {
@@ -103,11 +93,6 @@ export const TTScleaner = {
    * Verifica si un mensaje tiene suficiente calidad para TTS.
    */
   isHighQuality: (text: string) => shouldProcessMessage(text),
-  
-  /**
-   * Evalúa la calidad de un mensaje.
-   */
-  evaluateQuality: (text: string) => evaluateMessageQuality(text),
   
   /**
    * Devuelve el historial de mensajes.
