@@ -12,17 +12,17 @@
         operator: NOT_IN
         value: ["!ia","!ai"]
       # Evita duplicados: compara el último mensaje con el actual
-      - field: ${globals.clean(data.comment)}
+      - field: ${vars.clean(data.comment)}
         operator: NEQ
-        value: ${globals.clean(globals.last())}
+        value: ${vars.clean(vars.last())}
 
       # Evita mensajes vacíos después de limpiar
-      - field: ${globals.clean(data.comment)}
+      - field: ${vars.clean(data.comment)}
         operator: NOT_IN
         value: ["", null, undefined]
       
       # Longitud mínima para procesar
-      - field: ${globals.clean(data.comment).length}
+      - field: ${vars.clean(data.comment).length}
         operator: GT
         value: 3
   do:

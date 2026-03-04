@@ -5,7 +5,7 @@ import { PLUGIN_NAMES, HELPERS } from "../constants";
 import { shouldProcessMessage, evaluateMessageQuality } from "./message-quality";
 
 /**
- * Registro simple para funciones auxiliares (helpers/globals)
+ * Registro simple para funciones auxiliares (helpers/vars)
  */
 class HelperRegistry {
   private static instance: HelperRegistry;

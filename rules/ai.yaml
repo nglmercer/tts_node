@@ -10,17 +10,17 @@
         operator: CONTAINS
         value: ["!ia","!ai"]
       # Compara el último guardado (limpio) con el actual limpio
-      - field: ${globals.clean(data.comment)}
+      - field: ${vars.clean(data.comment)}
         operator: NEQ
-        value: ${globals.clean(globals.last())}
+        value: ${vars.clean(vars.last())}
 
       # Evita mensajes vacíos después de limpiar
-      - field: ${globals.clean(data.comment)}
+      - field: ${vars.clean(data.comment)}
         operator: NOT_IN
         value: ["", null, undefined]
       
       # si es un comentario corto
-      - field: ${globals.clean(data.comment).length}
+      - field: ${vars.clean(data.comment).length}
         operator: GT
         value: 3
 
