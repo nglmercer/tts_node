@@ -48,11 +48,12 @@ export class ExampleDiscoveryPlugin implements IPlugin {
       const discovery = registryPlugin.discovery as Discovery;
       const serviceName = 'overlay-service';
       const service = discovery.createClient(serviceName);
+      const allServices = discovery.getInternalRegistry().getAll();
       if (discovery.filter({ name: serviceName }).length === 0){
-        console.log("webhook, services:",discovery.getInternalRegistry().getAll())
+        console.log("webhook, services:",allServices)
         return { error: "no service", service }
       }
-      //console.log("SEND_WEBHOOK", action,service);  
+      console.log("SEND_WEBHOOK", action,allServices);  
       ///webhook/alert
       const url = `/webhook/alert`;
       try {

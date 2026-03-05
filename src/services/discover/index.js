@@ -260,25 +260,40 @@ class ClientFactory {
   constructor(filterServices) {
     this.filterServices = filterServices;
   }
-  createClient(nameOrId) {
+  createClient(criteria, loadBalancer = "round-robin") {
+    let rrIndex = 0;
     return {
-      get: async (path, options) => this.fetchInternal(nameOrId, path, { ...options, method: "GET" }),
-      post: async (path, options) => this.fetchInternal(nameOrId, path, { ...options, method: "POST" }),
-      put: async (path, options) => this.fetchInternal(nameOrId, path, { ...options, method: "PUT" }),
-      delete: async (path, options) => this.fetchInternal(nameOrId, path, { ...options, method: "DELETE" })
+      get: async (path, options) => this.fetchInternal(criteria, path, { ...options, method: "GET" }, loadBalancer, () => rrIndex++),
+      post: async (path, options) => this.fetchInternal(criteria, path, { ...options, method: "POST" }, loadBalancer, () => rrIndex++),
+      put: async (path, options) => this.fetchInternal(criteria, path, { ...options, method: "PUT" }, loadBalancer, () => rrIndex++),
+      delete: async (path, options) => this.fetchInternal(criteria, path, { ...options, method: "DELETE" }, loadBalancer, () => rrIndex++)
     };
   }
-  async fetchInternal(nameOrId, path, options) {
-    let services = this.filterServices({ name: nameOrId });
-    if (services.length === 0) {
-      services = this.filterServices({ id: nameOrId });
+  async fetchInternal(criteria, path, options, loadBalancer, getRrIndex) {
+    let services = [];
+    if (typeof criteria === "string") {
+      services = this.filterServices({ name: criteria });
+      if (services.length === 0) {
+        services = this.filterServices({ id: criteria });
+      }
+    } else {
+      services = this.filterServices(criteria);
     }
     if (services.length === 0) {
-      throw new Error(`Service ${nameOrId} not found`);
+      const name = typeof criteria === "string" ? criteria : JSON.stringify(criteria);
+      throw new Error(`Service ${name} not found`);
     }
-    const target = services[0];
+    let target = services[0];
+    if (services.length > 1) {
+      if (loadBalancer === "random") {
+        target = services[Math.floor(Math.random() * services.length)];
+      } else if (loadBalancer === "round-robin") {
+        target = services[getRrIndex() % services.length];
+      }
+    }
     if (!target) {
-      throw new Error(`Service ${nameOrId} not found`);
+      const name = typeof criteria === "string" ? criteria : JSON.stringify(criteria);
+      throw new Error(`Service ${name} not found`);
     }
     const url = `${target.schema}://${target.ip}:${target.port}${path}`;
     return fetch(url, options);
@@ -398,8 +413,8 @@ class Discovery extends EventEmitter3 {
     }
     this.network.stop();
   }
-  createClient(nameOrId) {
-    return this.clientFactory.createClient(nameOrId);
+  createClient(criteria, loadBalancer) {
+    return this.clientFactory.createClient(criteria, loadBalancer);
   }
   getInternalRegistry() {
     return this.registry;

@@ -21,7 +21,7 @@ export declare class Discovery extends EventEmitter {
     private setupProcessHooks;
     private removeProcessHooks;
     stop(): void;
-    createClient(nameOrId: string): {
+    createClient(criteria: string | Partial<ServiceInfo>, loadBalancer?: 'first' | 'random' | 'round-robin'): {
         get: (path: string, options?: RequestInit) => Promise<Response>;
         post: (path: string, options?: RequestInit) => Promise<Response>;
         put: (path: string, options?: RequestInit) => Promise<Response>;

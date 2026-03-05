@@ -12,12 +12,12 @@
         operator: NOT_IN
         value: ["!ia","!ai"]
       # Evita duplicados: compara el último mensaje con el actual
-      - field: ${helpers.clean(data.content)}
+      - field: ${vars.clean(data.content)}
         operator: NEQ
-        value: ${helpers.clean(vars.last())}
+        value: ${vars.clean(vars.last())}
 
       # Evita mensajes vacíos después de limpiar
-      - field: ${helpers.clean(data.content)}
+      - field: ${vars.clean(data.content)}
         operator: NOT_IN
         value: ["", null, undefined]
       
@@ -44,5 +44,5 @@
             type: 'alert'
             eventName: 'kick_chat'
             data: {username: '${data.sender.username}', message: '${data.content}'}
-            target: {id: '5de9c752-98b7-4bea-aea4-44b8c4b893ba'}
+            target: {id: '5db4363e-f741-49c5-a48f-27ff2174fb03'}
             #"{eventName: 'kick_reward_redeemed', data: {username: '${data.sender.username}',message: '${data.content}'},target: {id: '5de9c752-98b7-4bea-aea4-44b8c4b893ba'}}"

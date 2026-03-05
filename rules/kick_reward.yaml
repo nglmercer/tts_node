@@ -6,7 +6,7 @@
   if:
     - field: ${data.reward_title}
       operator: EQ
-      value: "gen1"
+      value: "xd_f"
       
   do:
     mode: SEQUENCE
