@@ -30,3 +30,21 @@
             data: {username: '${data.username}', reward_title: '${data.reward_title}', message: '${data.user_input}'}
             target: {id: '24f7c105-e244-4bbb-938a-f447d64dbfa0'}
             #"{eventName: 'kick_reward_redeemed', data: {username: '${data.sender.username}',message: '${data.content}'},target: {id: '5de9c752-98b7-4bea-aea4-44b8c4b893ba'}}"
+- id: RewardRedeemed-id
+  on: RewardRedeemed
+  if:
+    - field: ${data.reward_title}
+      operator: EQ
+      value: "ooooh_cat"
+      
+  do:
+    mode: SEQUENCE
+    actions:
+      - type: SEND_WEBHOOK
+        params:
+          method: POST
+          body:
+            type: 'alert'
+            eventName: 'kick_reward_redeemed'
+            data: {username: '${data.username}', reward_title: '${data.reward_title}', message: '${data.user_input}'}
+            target: {id: '5de9c752-98b7-4bea-aea4-44b8c4b893ba'}

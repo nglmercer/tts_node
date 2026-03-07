@@ -1,6 +1,6 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
-import { ActionRegistry } from "trigger_system/node";
-import { ACTIONS, LOG_MESSAGES } from "../src/constants";
+import { getRegistryPlugin } from "./Interface/ActionRegistryApi";
+import { ACTIONS, PLATFORMS } from "../src/constants";
 import { createCommentResponder } from 'plugins/ai/workflow';
 // Create responder with built-in semantic memory for context-aware responses
 
@@ -14,10 +14,12 @@ export class AIPlugin implements IPlugin {
 
     // Initialize AI module
 
-    const registry = ActionRegistry.getInstance();
+    const registry = await getRegistryPlugin(context);
+    if (!registry) return;
     const responder = createCommentResponder({
       onResponse: (response) => {
-        console.log(`\n🤖 bot: ${response.response}`);
+        console.log(`[AI RESPONSE]`,response);
+        context?.emit(PLATFORMS.SYSTEM, { eventName: 'TTS', data: {message: response.response} });
       },
       onDecision: (_msg, decision) => {
         console.log('  [Decision:', decision.decision, ']');

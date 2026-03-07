@@ -1,0 +1,7 @@
+# This is a rule for emit or play ai tts or internal play tts
+id: TTS-MAIN
+on: TTS
+do:
+  type: TTS
+  params:
+    message: ${data.message}

@@ -11,10 +11,6 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
 import { getRegistryPlugin,type ActionRegistryApi } from "./Interface/ActionRegistryApi";
 import type { Discovery } from "src/services/discover";
-const webhookService = {
-  name: 'overlay-service',
-  version: '1.0.0',
-}
 export class ExampleDiscoveryPlugin implements IPlugin {
   name = "ExampleDiscoveryPlugin";
   version = "1.0.0";
@@ -46,12 +42,12 @@ export class ExampleDiscoveryPlugin implements IPlugin {
       const method = String(action.params?.method || 'GET');
       const body = action.params?.body;
       const discovery = registryPlugin.discovery as Discovery;
-      const serviceName = 'overlay-service';
-      const service = discovery.createClient(serviceName);
+      const name = 'overlay-service';
+      const service = discovery.createClient({name});
       const allServices = discovery.getInternalRegistry().getAll();
-      if (discovery.filter({ name: serviceName }).length === 0){
+      if (discovery.filter({ name }).length === 0){
         console.log("webhook, services:",allServices)
-        return { error: "no service", service }
+        return { error: "no service", allServices }
       }
       console.log("SEND_WEBHOOK", action,allServices);  
       ///webhook/alert

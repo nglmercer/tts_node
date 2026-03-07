@@ -1,6 +1,6 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
 import { TTSService } from "./tts/index";
-import { ActionRegistry } from "trigger_system/node";
+import { getRegistryPlugin } from "./Interface/ActionRegistryApi";
 import { TTScleaner } from "../src/services/cleaner";
 import { PlaylistManager } from "../src/services/playlist";
 import {
@@ -89,8 +89,8 @@ export class TTSPlugin implements IPlugin {
       log.info(LOG_MESSAGES.TTS.LAST_MESSAGE(lastMessage));
     }
 
-    const registry = ActionRegistry.getInstance();
-
+    const registry = await getRegistryPlugin(context);
+    if (!registry) return;
     registry.register(ACTIONS.TTS, async (action, ctx) => {
       console.log(`[${ACTIONS.TTS}]`, action, Object.keys(ctx));
       if (!action.params?.message) return;
