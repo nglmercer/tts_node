@@ -44,9 +44,14 @@ export class OverlayDiscoveryPlugin implements IPlugin {
       const discovery = registryPlugin.discovery as Discovery;
       const name = 'overlay-framework';
       const service = discovery.createClient({name});
+      
+      const exists = discovery.filter({ name }).length > 0;
+      
+      if (!exists){
+        await discovery.scan();
+      }
       const allServices = discovery.getInternalRegistry().getAll();
-      if (discovery.filter({ name }).length === 0){
-        console.log("webhook, services:",allServices)
+      if (!exists){
         return { error: "no service", allServices }
       }
       console.log("OVERLAY_WEBHOOK", action,allServices);  
