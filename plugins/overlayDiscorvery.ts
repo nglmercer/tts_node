@@ -42,7 +42,7 @@ export class OverlayDiscoveryPlugin implements IPlugin {
       const method = String(action.params?.method || 'GET');
       const body = action.params?.body;
       const discovery = registryPlugin.discovery as Discovery;
-      const name = 'overlay-service';
+      const name = 'overlay-framework';
       const service = discovery.createClient({name});
       const allServices = discovery.getInternalRegistry().getAll();
       if (discovery.filter({ name }).length === 0){

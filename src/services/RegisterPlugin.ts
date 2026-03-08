@@ -1,18 +1,17 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
 import type { ActionHandler } from "trigger_system/node";
 import { ActionRegistry } from "trigger_system/node";
-import { Discovery } from "./discover/index.js";
+// Importing Discovery and also the new types from your built library
+import { Discovery, type ScanOptions, type ScanResult } from "./discover/index.js"; 
 import { PLUGIN_NAMES, HELPERS } from "../constants.js";
 import { TTScleaner } from "./cleaner.js";
+
 /**
  * Plugin que expone:
  * - ActionRegistry para registrar acciones
  * - HelperRegistry para helpers/utilidades
  * - ServiceRegistry para registrar servicios descubiertos
- * - Discovery para descubrimiento de servicios UDP
- * 
- * Los servicios deben ser agregados por los plugins que lo necesiten,
- * no hay servicios por defecto.
+ * - Discovery para descubrimiento de servicios UDP y Active Scanning
  */
 
 export interface ServiceInfo {
@@ -24,18 +23,19 @@ export interface ServiceInfo {
   port?: number;
 }
 
+// UPDATE: Added the new Discovery options for Broadcast and Identity
 export interface DiscoveryOptions {
   multicastAddress?: string;
   multicastInterface?: string;
   multicastPort?: number;
+  broadcastPort?: number;          
+  enableBroadcast?: boolean;       
+  enableIdentityEndpoint?: boolean;
   heartbeatInterval?: number;
   offlineTimeout?: number;
   setupHooks?: boolean;
 }
 
-/**
- * Registro simple para funciones auxiliares (helpers/vars)
- */
 export class HelperRegistry {
   private static instance: HelperRegistry;
   private helpers: Record<string, Function> = {};
@@ -80,10 +80,18 @@ export class ActionRegistryPlugin implements IPlugin {
   get Helpers() {
     return this.helperRegistry.getHelpers();
   }
+  
   constructor() {
     console.log(`${this.name} v${this.version}`);
     this.getSharedApi = this.getSharedApi.bind(this);
-    this.discovery = this.initDiscovery({ name: 'plugin-b-service', version: '1.0.0' }, 0);
+    
+    // UPDATE: Initialize Discovery. We disable hooks here since your plugin manager
+    // might handle the lifecycle. `enableIdentityEndpoint: false` because port is 0.
+    this.discovery = this.initDiscovery(
+      { name: 'plugin-b-service', version: '1.0.0' }, 
+      0, 
+      { setupHooks: false, enableIdentityEndpoint: false }
+    );
   }
 
   onLoad(context: PluginContext) {
@@ -101,7 +109,6 @@ export class ActionRegistryPlugin implements IPlugin {
 
   onUnload() {
     console.log(`${this.name} v${this.version} onUnload`);
-    // Limpiar discovery al descargar
     if (this.discovery) {
       this.discovery.stop();
       this.discovery = null;
@@ -110,9 +117,6 @@ export class ActionRegistryPlugin implements IPlugin {
 
   /**
    * Inicializa el sistema de descubrimiento de servicios
-   * @param serviceInfo Información del servicio local
-   * @param port Puerto para el descubrimiento
-   * @param options Opciones de configuración
    */
   initDiscovery(serviceInfo: ServiceInfo, port: number, options?: DiscoveryOptions): Discovery {
     if (this.discovery) {
@@ -120,21 +124,32 @@ export class ActionRegistryPlugin implements IPlugin {
       this.discovery.stop();
     }
 
-    this.discovery = new Discovery(serviceInfo, port, options);
+    this.discovery = new Discovery(serviceInfo as any, port, options);
     console.log(`[Discovery] Inicializado: ${serviceInfo.name} en puerto ${port}`);
-    this.discovery.start()
+    
+    // Empezamos a escuchar broadcasts / multicast
+    this.discovery.start().catch(e => console.error('[Discovery] Error starting:', e));
+    this.scanNetwork().catch(e => console.error('[Discovery] Error scanning:', e));
     return this.discovery;
   }
 
-  /**
-   * Obtiene la instancia de Discovery activa
-   */
   getDiscovery(): Discovery | null {
     return this.discovery;
   }
+
+  async scanNetwork(options?: ScanOptions): Promise<ScanResult[]> {
+    if (!this.discovery) {
+        console.warn('[Discovery] Cannot scan, discovery not initialized');
+        return [];
+    }
+    console.log('[Discovery] Iniciando escaneo activo de red...');
+    return await this.discovery.scan(options);
+  }
+
   register(name: string, fn: ActionHandler) {
     this.registry.register(name, fn);
   }
+
   getSharedApi() {
     const registry = this.registry;
     const helperRegistry = this.helperRegistry;
@@ -153,5 +168,4 @@ export class ActionRegistryPlugin implements IPlugin {
   }
 }
 
-// Instancia singleton del plugin
 export const actionRegistryPlugin = new ActionRegistryPlugin();
