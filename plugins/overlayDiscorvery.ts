@@ -11,8 +11,8 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
 import { getRegistryPlugin,type ActionRegistryApi } from "./Interface/ActionRegistryApi";
 import type { Discovery } from "src/services/discover";
-export class ExampleDiscoveryPlugin implements IPlugin {
-  name = "ExampleDiscoveryPlugin";
+export class OverlayDiscoveryPlugin implements IPlugin {
+  name = "OverlayDiscoveryPlugin";
   version = "1.0.0";
   constructor() {
     console.log(`${this.name} v${this.version}`);
@@ -38,7 +38,7 @@ export class ExampleDiscoveryPlugin implements IPlugin {
    * Registra acciones de ejemplo que usan los servicios
    */
   private registerActions(registryPlugin: ActionRegistryApi) {
-    registryPlugin.register('SEND_WEBHOOK',async (action, _context) => {
+    registryPlugin.register('OVERLAY_WEBHOOK',async (action, _context) => {
       const method = String(action.params?.method || 'GET');
       const body = action.params?.body;
       const discovery = registryPlugin.discovery as Discovery;
@@ -49,7 +49,7 @@ export class ExampleDiscoveryPlugin implements IPlugin {
         console.log("webhook, services:",allServices)
         return { error: "no service", allServices }
       }
-      console.log("SEND_WEBHOOK", action,allServices);  
+      console.log("OVERLAY_WEBHOOK", action,allServices);  
       ///webhook/alert
       const url = `/webhook/alert`;
       try {
@@ -57,7 +57,7 @@ export class ExampleDiscoveryPlugin implements IPlugin {
           method,
           headers: {
             'Content-Type': 'application/json',
-            'X-Forwarded-By': 'ExampleDiscoveryPlugin'
+            'X-Forwarded-By': 'OverlayDiscoveryPlugin'
           }
         };
 
@@ -92,4 +92,4 @@ export class ExampleDiscoveryPlugin implements IPlugin {
 }
 
 // Exportar instancia
-export const exampleDiscoveryPlugin = new ExampleDiscoveryPlugin();
+export const exampleDiscoveryPlugin = new OverlayDiscoveryPlugin();

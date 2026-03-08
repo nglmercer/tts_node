@@ -39,7 +39,7 @@
     "rdev-node": "^1.0.1",
     "string-dac": "^1.0.0",
     "tray-icon-node": "^0.1.1",
-    "trigger_system": "^1.1.5",
+    "trigger_system": "^1.1.6",
     "webview-napi": "^0.1.8"
   }
 }

@@ -9,7 +9,7 @@
       # Quality filter - skips gibberish, repetitive patterns, etc.
       # See: plugins/ai/constants.ts for configuration
       - field: ${data.comment}
-        operator: NOT_IN
+        operator: NOT_CONTAINS
         value: ["!ia","!ai"]
       # Evita duplicados: compara el último mensaje con el actual
       - field: ${vars.clean(data.comment)}

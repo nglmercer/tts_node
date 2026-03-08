@@ -11,7 +11,7 @@
   do:
     mode: SEQUENCE
     actions:
-      - type: SEND_WEBHOOK
+      - type: OVERLAY_WEBHOOK
         params:
           method: POST
           #{
@@ -28,7 +28,7 @@
             type: 'alert'
             eventName: 'kick_reward_redeemed'
             data: {username: '${data.username}', reward_title: '${data.reward_title}', message: '${data.user_input}'}
-            target: {id: '24f7c105-e244-4bbb-938a-f447d64dbfa0'}
+            target: {id: '87809595-af71-43dc-9860-69f08f8068a5'}
             #"{eventName: 'kick_reward_redeemed', data: {username: '${data.sender.username}',message: '${data.content}'},target: {id: '5de9c752-98b7-4bea-aea4-44b8c4b893ba'}}"
 - id: RewardRedeemed-id
   on: RewardRedeemed
@@ -40,11 +40,11 @@
   do:
     mode: SEQUENCE
     actions:
-      - type: SEND_WEBHOOK
+      - type: OVERLAY_WEBHOOK
         params:
           method: POST
           body:
             type: 'alert'
             eventName: 'kick_reward_redeemed'
             data: {username: '${data.username}', reward_title: '${data.reward_title}', message: '${data.user_input}'}
-            target: {id: '5de9c752-98b7-4bea-aea4-44b8c4b893ba'}
+            target: {id: '9dd05223-4379-45b1-80ee-6c5754c1c224'}
