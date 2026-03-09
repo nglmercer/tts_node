@@ -1,0 +1,15 @@
+# Test rule to trigger a simulation
+# This rule triggers another rule by simulating a 'chat' event
+- id: trigger-test-chat
+  on: test_trigger
+  do:
+    mode: SEQUENCE
+    actions:
+      - type: emitEvent
+        params:
+          eventName: chat
+          filePath: data/chat.json
+          platform: tiktok
+      - type: log
+        params:
+          message: "emitEvent tiktok chat"

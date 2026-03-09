@@ -1,0 +1,40 @@
+# @import data from '../../data/chat.json'
+# Chat comment rule - TTS processing with quality filtering
+# Quality filter configuration is in plugins/ai/constants.ts
+- id: rule-id
+  on: chat
+  if:
+    operator: AND
+    conditions:
+      # Evita duplicados: compara el último mensaje con el actual
+      - field: ${vars.clean(data.comment)}
+        operator: NEQ
+        value: ${vars.clean(vars.last())}
+
+      # Evita mensajes vacíos después de limpiar
+      - field: ${vars.clean(data.comment)}
+        operator: NOT_IN
+        value: ["", null, undefined]
+      
+      # Longitud mínima para procesar
+      - field: ${vars.clean(data.comment).length}
+        operator: GT
+        value: 3
+  do:
+    mode: SEQUENCE
+    actions:
+      - if:
+          operator: OR
+          conditions:
+            - field: data.content
+              operator: CONTAINS
+              value: ['!ai', '!ia']
+        then:
+          - type: ai_respond
+            params:
+              prompt: ${data.comment}
+              user: ${data.nickname}
+        else:
+          - type: TTS
+            params:
+              message: ${data.comment}

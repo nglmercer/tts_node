@@ -1,4 +1,9 @@
 import { StringDetector } from 'string-dac';
+import {
+  evaluateMessageQuality,
+  shouldProcessMessage,
+  type QualityResult
+} from './message-quality';
 
 const detector = new StringDetector();
 /**
@@ -32,18 +37,18 @@ export const CleanerUtils = {
   },
 
   /**
-   * Procesa un mensaje: lo limpia y lo guarda en el historial.
+   * Procesa un mensaje: lo limpia, evalúa calidad y lo guarda en el historial.
    */
-  registerMessage(text: string): TTSMessage {
+  registerMessage(text: string, skipQualityCheck: boolean = false): TTSMessage {
     const cleaned = this.cleanText(text);
+    
     const message: TTSMessage = {
       text,
       cleanedText: cleaned,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     
     history.push(message);
-    console.log(`[Cleaner] Message registered. History size: ${history.length}. Last: "${cleaned}"`);
     
     // Mantener un historial circular limitado
     if (history.length > 50) {
@@ -75,8 +80,19 @@ export const CleanerUtils = {
 export const TTScleaner = {
   /**
    * Procesa un mensaje para el sistema TTS.
+   * Incluye evaluación de calidad.
    */
   processMessage: (text: string) => CleanerUtils.registerMessage(text),
+  
+  /**
+   * Procesa un mensaje sin verificación de calidad (para casos especiales).
+   */
+  processMessageUnchecked: (text: string) => CleanerUtils.registerMessage(text, true),
+  
+  /**
+   * Verifica si un mensaje tiene suficiente calidad para TTS.
+   */
+  isHighQuality: (text: string) => shouldProcessMessage(text),
   
   /**
    * Devuelve el historial de mensajes.

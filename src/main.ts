@@ -1,4 +1,4 @@
-import { RuleEngine, ActionRegistry, TriggerLoader } from "trigger_system/node";
+import { ActionRegistry, TriggerLoader } from "trigger_system/node";
 import { BasePluginManager } from "./services/plugin";
 import { ensureDir, getBaseDir } from "../utils/filepath";
 import { ActionRegistryPlugin } from "./services/RegisterPlugin";
@@ -12,15 +12,17 @@ async function main() {
   await manager.loadDefaultPlugins();
   const engine = manager.engine;
 
-  const registryPlugin = (await manager.getPlugin(
-    PLUGIN_NAMES.ACTION_REGISTRY
-  )) as ActionRegistryPlugin;
-  const pluginHelpers = registryPlugin.Helpers || {};
-
+  
+  console.log("[MAIN]", Object.values(PLATFORMS));
   Object.values(PLATFORMS).forEach((platform) => {
-    console.log("events", platform);
-    manager.on(platform, ({ eventName, data }) => {
-      console.log({ eventName, data });
+    manager.on(platform, async ({ eventName, data }) => {
+      const registryPlugin = (await manager.getPlugin(
+        PLUGIN_NAMES.ACTION_REGISTRY
+      )) as ActionRegistryPlugin;
+      //console.log("Helpers:", registryPlugin);
+      
+      const pluginHelpers = registryPlugin.Helpers;
+      //console.log(pluginHelpers,registryPlugin);
       if (!eventName || !data) {
         return;
       }
@@ -50,12 +52,6 @@ async function main() {
       length: newRules.length,
     });
 
-    // Ejecutar prueba mediante el plugin RuleTester
-    /*         const testerPlugin = manager.getPlugin(PLUGIN_NAMES.RULE_TESTER);
-        const tester = testerPlugin?.getSharedApi ? (testerPlugin.getSharedApi() as any) : null;
-        if (tester?.testEvent) {
-        //    await tester.testEvent(engine, "chat", testdata);
-        } */
   });
   watcher.on("error", (err) => {
     console.error("Error watching rules:", err);

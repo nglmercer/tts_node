@@ -14,7 +14,7 @@ bun run start    # Run production build
 ## Features
 
 - **Plugin Architecture**: Modular system with hot-reloading support
-- **AI Integration**: DeepSeek, OpenAI, LMStudio, and local embeddings via LanceDB
+- **AI Integration**: DeepSeek, OpenAI, and local embeddings via LanceDB
 - **TTS Support**: Supertonic ONNX-based text-to-speech
 - **TikTok Live**: WebSocket integration for TikTok interactions
 - **System Tray**: Native tray icon for desktop control

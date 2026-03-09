@@ -1,7 +1,16 @@
-import { pipeline, TextToAudioOutput, TextToAudioPipelineOptions } from '@huggingface/transformers';
-import { detectLanguage,type DetectionResult } from 'plugins/ai/llmstudio';
+import { pipeline, TextToAudioOutput, TextToAudioPipelineOptions, env } from '@huggingface/transformers';
+
 import * as fs from 'fs';
 import * as path from 'path';
+
+// Import language detection from LongCat provider
+import { detectLanguage, detectLanguageQuick, detectLanguageWithLongCat, SUPPORTED_LANGUAGES, type SupportedLanguage } from '../ai/providers/longcat';
+
+
+// Set local cache directory to avoid conflicts and fix corruption issues
+env.cacheDir = path.resolve(process.cwd(), ".cache");
+env.allowLocalModels = false; // Force checking remote/cache
+
 
 // Tipado extendido para los métodos útiles
 interface AudioOutput extends TextToAudioOutput {
@@ -11,10 +20,9 @@ interface AudioOutput extends TextToAudioOutput {
 }
 
 /**
- * Idiomas soportados por el modelo Supertonic
+ * Idiomas soportados por el modelo Supertonic (using LongCat supported languages)
  */
-export type Language = 'en' | 'ko' | 'es' | 'pt' | 'fr';
-const SUPPORTED_LANGUAGES: Language[] = ["en", "ko", "es", "pt", "fr"];
+export type Language = SupportedLanguage;
 /**
  * Interfaz para opciones de síntesis de voz
  */
@@ -64,6 +72,7 @@ class SupertonicTTS {
         if (!SupertonicTTS.instance) {
             SupertonicTTS.instance = await pipeline('text-to-speech', 'onnx-community/Supertonic-TTS-2-ONNX', {
                 device: 'cpu',
+                // dtype: 'q8' // q8 not exist in this model
             });
         }
         return SupertonicTTS.instance;
@@ -129,7 +138,7 @@ export class TTSService {
         options: SynthesisOptions = {}
     ): Promise<{ savedPath: string; fileBuffer: Buffer; detectedLanguage: Language }> {
         try {
-            // Detect language using LFM inference
+            // Detect language using LongCat AI
             const _raw = await this.processmsg(text)
             const detectedLang = await this.detectLanguage(_raw?.language);
             console.log(`[TTSService] Detected language: ${detectedLang}`,text);
@@ -139,9 +148,10 @@ export class TTSService {
             
             // Parse rate option to speed multiplier
             const speed = this.parseRateToSpeed(options.rate);
-            
+            // Use the original text for TTS
+            const textToSpeak = text;
             // Generate audio
-            const audio = await this.supertonic.speak(this._preprocessText(_raw?.summary || text,detectedLang), voiceKey, { 
+            const audio = await this.supertonic.speak(this._preprocessText(textToSpeak,detectedLang), voiceKey, { 
                 speed: speed,
                 num_inference_steps: 5
             });
@@ -211,24 +221,45 @@ export class TTSService {
             .substring(0, 50);
     }
     private isSupportedLanguage(lang: string): lang is Language {
-        return (SUPPORTED_LANGUAGES as string[]).includes(lang);
+        return (SUPPORTED_LANGUAGES as readonly string[]).includes(lang);
     }
     /**
-     * Detect language using LFM inference
+     * Detect language using LongCat AI
      * @param text Text to analyze
      * @returns Detected language code (en, ko, es, pt, fr)
      */
-    private async detectLanguage(lang: string='es'): Promise<Language> {
-        return this.isSupportedLanguage(lang) ? lang : "es"
+    private async detectLanguage(lang: string = 'es'): Promise<Language> {
+        // If already detected, use that
+        if (this.isSupportedLanguage(lang)) {
+            return lang;
+        }
+        // Default to Spanish
+        return 'es';
     }
-    private async processmsg(text:string){
-        let result;
+
+    /**
+     * Process message to detect language using LongCat
+     * @param text Text to analyze
+     * @returns Language detection result
+     */
+    private async processmsg(text: string): Promise<{ language: Language; summary?: string }> {
         try {
-             result = await detectLanguage(text) 
-            return result;
+            // Use quick detection first for faster response
+            const quickResult = detectLanguageQuick(text);
+            
+            // Then optionally use AI for more accurate detection
+            // Set useAI=false for faster synchronous detection, or true for AI-powered
+            const result = await detectLanguage(text, false); // Use quick detection by default
+            
+            console.log(`[TTSService] Language detection result: ${result.language} (confidence: ${result.confidence})`);
+            
+            return { 
+                language: result.language,
+                summary: undefined
+            };
         } catch (error) {
-            console.log({error})
-            result
+            console.log({ error });
+            return { language: 'es' };
         }
     }
     public _preprocessText(text:string, lang:string) {
@@ -290,7 +321,7 @@ export class TTSService {
         text = text.replace(/\s+/g, ' ').trim();
 
         // If text doesn't end with punctuation, quotes, or closing brackets, add a period
-        if (!/[.!?;:,'\"')\]}…。」』】〉》›»]$/.test(text)) {
+        if (!/[.!?;:,'\")\]}…。」』】〉》›»]$/.test(text)) {
             text += '.';
         }
 

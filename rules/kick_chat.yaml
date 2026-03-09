@@ -1,0 +1,34 @@
+# @import data from '../../data/ChatMessageEvent.json'
+# Chat comment rule - TTS processing with quality filtering
+# Quality filter configuration is in plugins/ai/constants.ts
+- id: ChatMessageEvent-id
+  on: ChatMessageEvent
+  if:
+    operator: AND
+    conditions:
+      # Evita duplicados: compara el último mensaje con el actual
+      - field: ${vars.clean(data.content)}
+        operator: NEQ
+        value: ${vars.clean(vars.last())}
+
+      # Filtra mensajes muy cortos
+      - field: ${vars.clean(data.content).length}
+        operator: GT
+        value: 3
+      
+  do:
+    mode: SEQUENCE
+    actions:
+      - if:
+        - field: data.content
+          operator: NOT_CONTAINS
+          value: ['!ia', '!ai']
+        then:
+          - type: TTS
+            params:
+              message: ${data.content}
+        else:
+          - type: ai_respond
+            params:
+              prompt: ${data.content}
+              user: ${data.sender.username}

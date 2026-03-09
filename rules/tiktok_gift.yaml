@@ -1,0 +1,33 @@
+# @import data from '../../data/gift.json'
+# @import Allgifts from '../../data/Allgifts.json'
+# Comprehensive test using imported data for autocompletion
+
+- id: general-gift
+  on: gift
+  do:
+    mode: SEQUENCE
+    actions:
+      - type: log
+        params:
+          message: ${data.nickname} envio ${data.giftName}
+      - type: TTS
+        params:
+          message: ${data.nickname} envio ${data.giftName}
+
+- id: Rose-gift
+  on: gift
+  if:
+    field: ${data.gift.gift_id}
+    operator: EQ
+    value: 5655
+  do:
+    mode: SEQUENCE
+    actions:
+      - type: OVERLAY_WEBHOOK
+        params:
+          method: POST
+          body:
+            type: 'alert'
+            eventName: 'kick_reward_redeemed'
+            data: {username: '${data.nickname}', reward_title: '${data.giftName}'}
+            target: {id: '9dd05223-4379-45b1-80ee-6c5754c1c224'}

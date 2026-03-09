@@ -13,6 +13,7 @@ export const PLATFORMS = {
   TWITCH: "twitch",
   TIKTOK: "tiktok",
   KICK: "kick",
+  SYSTEM: "system",
 } as const;
 
 export type Platform = (typeof PLATFORMS)[keyof typeof PLATFORMS];
@@ -23,10 +24,10 @@ export type Platform = (typeof PLATFORMS)[keyof typeof PLATFORMS];
 
 export const PLUGIN_NAMES = {
   ACTION_REGISTRY: "action-registry",
-  RULE_TESTER: "rule-tester",
   TTS_SERVICE: "tts-service",
   TIKFINITY: "tikfinity",
   MCPLUGIN: "mcplugin",
+  SAVE_EVENTS: "save-events"
 } as const;
 
 // ============================================================================
@@ -182,13 +183,18 @@ export const PATHS = {
 export const ACTIONS = {
   TTS: "TTS",
   LAST_COMMENT: "lastcomment",
-  MC: "mc",
+  MC_COMMAND: "minecraft:command",
   // New evaluation actions
   EVALUATE: "evaluate",
   EVALUATE_AND_SPEAK: "evaluate_and_speak",
   DATETIME: "datetime",
   TTS_DIRECT: "tts_direct",
   AI_RESPOND: "ai_respond",
+  // toggles
+  AUTOSAVE: "autosave",
+  // input
+  SEVENT: "simulateEvent",
+  EMIT_EVENT: "emitEvent"
 } as const;
 
 // ============================================================================
@@ -198,7 +204,6 @@ export const ACTIONS = {
 export const HELPERS = {
   LAST: "last",
   CLEAN: "clean",
-  MC_HELPER: "mcHelper",
 } as const;
 
 // ============================================================================

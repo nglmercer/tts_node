@@ -1,6 +1,6 @@
 import type { IPlugin, PluginContext } from "bun_plugins";
 import { TTSService } from "./tts/index";
-import { ActionRegistry } from "trigger_system/node";
+import { getRegistryPlugin } from "./Interface/ActionRegistryApi";
 import { TTScleaner } from "../src/services/cleaner";
 import { PlaylistManager } from "../src/services/playlist";
 import {
@@ -11,7 +11,6 @@ import {
   AUDIO,
 } from "../src/constants";
 import { VOICES } from "./tts/index"; 
-import { responde } from "./ai/generator";
 // Valid voice keys from Supertonic
 const VALID_VOICE_KEYS = Object.keys(VOICES);
 
@@ -90,16 +89,15 @@ export class TTSPlugin implements IPlugin {
       log.info(LOG_MESSAGES.TTS.LAST_MESSAGE(lastMessage));
     }
 
-    const registry = ActionRegistry.getInstance();
-
+    const registry = await getRegistryPlugin(context);
+    if (!registry) return;
     registry.register(ACTIONS.TTS, async (action, ctx) => {
       console.log(`[${ACTIONS.TTS}]`, action, Object.keys(ctx));
       if (!action.params?.message) return;
       let result = await TTScleaner.processMessage(String(action.params?.message));
       if (!result?.cleanedText) return;
-      if (String(action.params?.message).includes('ai')){
-        result = await TTScleaner.processMessage(await responde(String(action.params?.message)))
-      }
+  
+      
       // Save last message
       await storage.set(STORAGE_KEYS.LAST_MESSAGE, result.cleanedText);
 

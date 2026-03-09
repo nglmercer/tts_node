@@ -1,0 +1,8 @@
+# This is a rule for emit or play ai tts or internal play tts
+id: AI-MAIN
+on: AI
+do:
+  type: ai_respond
+  params:
+    prompt: ${data.content || data.nickname}
+    user: ${data.comment || data.sender.username}

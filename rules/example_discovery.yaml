@@ -1,0 +1,55 @@
+# Ejemplo de reglas para el plugin de descubrimiento de servicios
+# Estas reglas demuestran cómo usar las acciones registradas por ExampleDiscoveryPlugin
+
+# Lista todos los servicios registrados
+- id: list-services
+  on: example_list_services
+  do:
+    type: EXAMPLE_LIST_SERVICES
+
+# Obtiene usuarios del servicio
+- id: get-users
+  on: example_get_users
+  do:
+    type: EXAMPLE_GET_USERS
+
+# Obtiene productos del servicio
+- id: get-products
+  on: example_get_products
+  do:
+    type: EXAMPLE_GET_PRODUCTS
+
+# Forward genérico a servicio de orders
+- id: get-orders
+  on: example_get_orders
+  do:
+    type: EXAMPLE_FORWARD
+    params:
+      service: orders
+      path: /api/orders
+      method: GET
+
+# Crear una nueva orden (POST)
+- id: create-order
+  on: example_create_order
+  do:
+    type: EXAMPLE_FORWARD
+    params:
+      service: orders
+      path: /api/orders
+      method: POST
+      body:
+        userId: 1
+        items:
+          - productId: 1
+            quantity: 2
+
+# Ejemplo: obtener datos de un servicio específico (configurable)
+- id: forward-service
+  on: example_forward
+  do:
+    type: EXAMPLE_FORWARD
+    params:
+      service: users
+      path: /api/users
+      method: GET
