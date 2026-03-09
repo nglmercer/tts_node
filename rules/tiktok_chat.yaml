@@ -24,15 +24,17 @@
     mode: SEQUENCE
     actions:
       - if:
-        - field: data.comment
-          operator: NOT_CONTAINS
-          value: ['!ia', '!ai']
+          operator: OR
+          conditions:
+            - field: data.content
+              operator: CONTAINS
+              value: ['!ai', '!ia']
         then:
-          - type: TTS
-            params:
-              message: ${data.comment}
-        else:
           - type: ai_respond
             params:
               prompt: ${data.comment}
               user: ${data.nickname}
+        else:
+          - type: TTS
+            params:
+              message: ${data.comment}
