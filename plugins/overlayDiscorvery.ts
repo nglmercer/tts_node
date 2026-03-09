@@ -51,9 +51,6 @@ export class OverlayDiscoveryPlugin implements IPlugin {
         await discovery.scan();
       }
       const allServices = discovery.getInternalRegistry().getAll();
-      if (!exists){
-        return { error: "no service", allServices }
-      }
       console.log("OVERLAY_WEBHOOK", action,allServices);  
       ///webhook/alert
       const url = `/webhook/alert`;

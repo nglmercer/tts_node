@@ -1,6 +1,6 @@
 # @import data from '../../data/chat.json'
 # chat comment with quality filtering
-- id: rule-id
+- id: ai-chat
   on: chat
   if:
     operator: AND
@@ -27,7 +27,7 @@
   do:
     mode: SEQUENCE
     actions:
-      - type: AI_RESPOND
+      - type: ai_respond
         params:
           prompt: ${data.comment}
       - type: log

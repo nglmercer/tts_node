@@ -1,4 +1,5 @@
 # @import data from '../../data/gift.json'
+# @import Allgifts from '../../data/Allgifts.json'
 # Comprehensive test using imported data for autocompletion
 
 - id: general-gift
@@ -22,7 +23,11 @@
   do:
     mode: SEQUENCE
     actions:
-      - type: log
+      - type: OVERLAY_WEBHOOK
         params:
-          message: ${data.nickname} envio ${data.giftName}
-      # TODO: Implement specific actions for rose gift
+          method: POST
+          body:
+            type: 'alert'
+            eventName: 'kick_reward_redeemed'
+            data: {username: '${data.nickname}', reward_title: '${data.giftName}'}
+            target: {id: '9dd05223-4379-45b1-80ee-6c5754c1c224'}
