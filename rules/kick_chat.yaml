@@ -11,10 +11,10 @@
         operator: NEQ
         value: ${vars.clean(vars.last())}
 
-      # Evita mensajes vacíos después de limpiar
-      - field: ${vars.clean(data.content)}
-        operator: IS_EMPTY
-        value: false # false or true for invert
+      # Filtra mensajes muy cortos
+      - field: ${vars.clean(data.content).length}
+        operator: GT
+        value: 3
       
   do:
     mode: SEQUENCE
@@ -24,10 +24,11 @@
           operator: NOT_CONTAINS
           value: ['!ia', '!ai']
         then:
-          type: log
-          params: 
-            message: ${JSON.stringify(data)}
+          - type: TTS
+            params:
+              message: ${data.content}
         else:
-          type: log
-          params: 
-            message: "Mensaje ignorado: ${data.content}"
+          - type: ai_respond
+            params:
+              prompt: ${data.content}
+              user: ${data.sender.username}

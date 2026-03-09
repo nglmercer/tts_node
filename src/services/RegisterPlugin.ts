@@ -105,6 +105,7 @@ export class ActionRegistryPlugin implements IPlugin {
     this.helperRegistry.register(HELPERS.CLEAN, (t: any) => {
       return TTScleaner.cleanOnly(String(t || ""));
     });
+    // context.storage.set("registry", this.registry.Handlers);
   }
 
   onUnload() {
