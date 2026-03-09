@@ -6,11 +6,6 @@
   if:
     operator: AND
     conditions:
-      # Quality filter - skips gibberish, repetitive patterns, etc.
-      # See: plugins/ai/constants.ts for configuration
-      - field: ${data.content}
-        operator: NOT_CONTAINS
-        value: ["!ia","!ai"]
       # Evita duplicados: compara el último mensaje con el actual
       - field: ${vars.clean(data.content)}
         operator: NEQ
@@ -18,16 +13,21 @@
 
       # Evita mensajes vacíos después de limpiar
       - field: ${vars.clean(data.content)}
-        operator: NOT_IN
-        value: ["", null, undefined]
+        operator: IS_EMPTY
+        value: false # false or true for invert
       
   do:
     mode: SEQUENCE
     actions:
-      - type: TTS
-        params:
-          message: ${data.content}
-      - type: ai_respond
-        params:
-          prompt: ${data.content}
-          user: ${data.sender.username}
+      - if:
+        - field: data.content
+          operator: NOT_CONTAINS
+          value: ['!ia', '!ai']
+        then:
+          type: log
+          params: 
+            message: ${JSON.stringify(data)}
+        else:
+          type: log
+          params: 
+            message: "Mensaje ignorado: ${data.content}"
