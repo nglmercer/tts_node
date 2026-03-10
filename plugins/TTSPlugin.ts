@@ -130,12 +130,9 @@ export class TTSPlugin implements IPlugin {
     registry.register(ACTIONS.LAST_COMMENT, async (action, ctx) => {
       const history = TTScleaner.getMessageHistory();
       const lastItem = history[history.length - 1]; // Fallback to history
-
-      // Try getting from storage first for consistency
-      const storedLastMessage = await storage.get<string>(STORAGE_KEYS.LAST_MESSAGE);
-
       console.log(`[${ACTIONS.LAST_COMMENT}]`, action, ctx);
       if (!action.params?.message) return;
+      if (lastItem?.cleanedText === action.params.message) return;
       const result = await TTScleaner.processMessage(String(action.params?.message));
       if (!result?.cleanedText) return;
 

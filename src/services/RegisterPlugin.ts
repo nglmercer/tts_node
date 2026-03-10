@@ -4,8 +4,7 @@ import { ActionRegistry } from "trigger_system/node";
 // Importing Discovery and also the new types from your built library
 import { Discovery, type ScanOptions, type ScanResult } from "./discover/index.js"; 
 import { PLUGIN_NAMES, HELPERS } from "../constants.js";
-import { TTScleaner } from "./cleaner.js";
-
+import { CleanerUtils } from "./cleaner.js";
 /**
  * Plugin que expone:
  * - ActionRegistry para registrar acciones
@@ -97,13 +96,18 @@ export class ActionRegistryPlugin implements IPlugin {
   onLoad(context: PluginContext) {
     console.log(`${this.name} v${this.version} onLoad`);
     this.helperRegistry.register(HELPERS.LAST, () => {
-      const history = TTScleaner.getMessageHistory();
-      const lastItem = history[history.length - 1];
+      const lastItem = CleanerUtils.getLastMessage();
+      console.log('lastItem',lastItem)
       return lastItem ? lastItem.cleanedText : "";
     });
 
-    this.helperRegistry.register(HELPERS.CLEAN, (t: any) => {
-      return TTScleaner.cleanOnly(String(t || ""));
+    this.helperRegistry.register(HELPERS.CLEAN, (t: string|null|undefined) => {
+      if (t) {
+        setTimeout(() => {
+          CleanerUtils.registerMessage(t)
+        }, 1000);
+      }
+      return CleanerUtils.cleanText(String(t || ""));
     });
     // context.storage.set("registry", this.registry.Handlers);
   }

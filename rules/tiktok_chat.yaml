@@ -24,17 +24,19 @@
     mode: SEQUENCE
     actions:
       - if:
-          operator: OR
-          conditions:
-            - field: data.content
-              operator: CONTAINS
-              value: ['!ai', '!ia']
+          field: data.comment
+          operator: CONTAINS
+          value: ['!ai', '!ia', 'AI', 'IA']
+        else:
+          # - type: TTS
+          #   params:
+          #     message: ${data.comment}
+          - type: ai_respond
+            params:
+              prompt: "PORFAVOR TRADUCE O RESUME ESTE COMENTARIO SIEMPRE FILTRA SI ES OFENSIVO: User ${data.nickname} : ${data.comment}"
+              user: ${data.nickname}
         then:
           - type: ai_respond
             params:
-              prompt: ${data.comment}
+              prompt: "User ${data.nickname} PREGUNTA: ${data.comment}"
               user: ${data.nickname}
-        else:
-          - type: TTS
-            params:
-              message: ${data.comment}
