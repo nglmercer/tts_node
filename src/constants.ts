@@ -263,3 +263,22 @@ export const AUDIO = {
   DEFAULT_PITCH: "0Hz",
   BUFFER_TRACK_LABEL: (index: number) => `Buffer Track #${index}`,
 } as const;
+
+export type VoiceKey = 'F1' | 'F2' | 'F3' | 'F4' | 'F5' | 'M1' | 'M2' | 'M3' | 'M4' | 'M5';
+
+export const VOICES_CLEAN: Record<VoiceKey, string> = {
+    F1: 'F1',
+    F2: 'F2',
+    F3: 'F3',
+    F4: 'F4',
+    F5: 'F5',
+    M1: 'M1',
+    M2: 'M2',
+    M3: 'M3',
+    M4: 'M4',
+    M5: 'M5',
+};
+
+export const VOICES_BIN = Object.fromEntries(
+    Object.entries(VOICES_CLEAN).map(([key, value]) => [key, `${value}.bin`])
+) as Record<VoiceKey, string>;

@@ -40,6 +40,7 @@
     "string-dac": "^1.0.0",
     "tray-icon-node": "^0.1.1",
     "trigger_system": "^1.2.1",
-    "webview-napi": "^0.1.8"
+    "webview-napi": "^0.1.8",
+    "xsai": "^0.4.3"
   }
 }

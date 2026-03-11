@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // Import language detection from LongCat provider
-import { detectLanguage, detectLanguageQuick, detectLanguageWithLongCat, SUPPORTED_LANGUAGES, type SupportedLanguage } from '../ai/providers/longcat';
+import { detectLanguage, detectLanguageWithLongCat, SUPPORTED_LANGUAGES, type SupportedLanguage } from '../ai/providers/longcat';
 
 
 // Set local cache directory to avoid conflicts and fix corruption issues
@@ -13,10 +13,12 @@ env.allowLocalModels = false; // Force checking remote/cache
 
 
 // Tipado extendido para los métodos útiles
+// Note: TextToAudioOutput from transformers only has audio Float32Array and sampling_rate number
+// The toWav(), toBlob(), save() methods are runtime methods added by the pipeline
 interface AudioOutput extends TextToAudioOutput {
     toWav(): Uint8Array;
     toBlob(): Blob;
-    save(path: string): Promise<void>;
+    save(filePath: string): Promise<void>;
 }
 
 /**
@@ -51,13 +53,15 @@ export const VOICES = {
 } as const;
 
 export type VoiceKey = keyof typeof VOICES;
-
+const MODEL_ID = 'onnx-community/Supertonic-TTS-2-ONNX';
 /**
  * Clase interna que implementa el TTS usando Supertonic
  */
 class SupertonicTTS {
+    // Use a simpler type - the pipeline returns a complex union that's hard to type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private static instance: any = null;
-    private readonly baseUrl = 'https://huggingface.co/onnx-community/Supertonic-TTS-2-ONNX/resolve/main/voices/';
+    private readonly baseUrl = `https://huggingface.co/${MODEL_ID}/resolve/main/voices/`;
     
     private defaultVoice: string;
 
@@ -70,7 +74,7 @@ class SupertonicTTS {
      */
     private async getPipeline() {
         if (!SupertonicTTS.instance) {
-            SupertonicTTS.instance = await pipeline('text-to-speech', 'onnx-community/Supertonic-TTS-2-ONNX', {
+            SupertonicTTS.instance = await pipeline('text-to-speech', MODEL_ID, {
                 device: 'cpu',
                 // dtype: 'q8' // q8 not exist in this model
             });
@@ -93,7 +97,7 @@ class SupertonicTTS {
             ...customOptions
         };
 
-        const result = await tts(text, options);
+        const result = await tts!(text, options);
         return result as AudioOutput;
     }
 
@@ -243,10 +247,7 @@ export class TTSService {
      * @returns Language detection result
      */
     private async processmsg(text: string): Promise<{ language: Language; summary?: string }> {
-        try {
-            // Use quick detection first for faster response
-            const quickResult = detectLanguageQuick(text);
-            
+        try {            
             // Then optionally use AI for more accurate detection
             // Set useAI=false for faster synchronous detection, or true for AI-powered
             const result = await detectLanguage(text, false); // Use quick detection by default
